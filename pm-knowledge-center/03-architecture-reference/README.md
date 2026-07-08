@@ -19,7 +19,7 @@
 
 ## 怎麼新增案例
 
-1. 專案 **Close Meeting** 之後（趁記憶還熱），複製 [`_template-reference-design.md`](./_template-reference-design.md)。
+1. 專案 **Close Meeting** 之後（趁記憶還熱），由該案 **PLM 主導歸檔**（選型理由、成本結構是 PLM 的視角；執行面資訊可請 PJM 補充），複製 [`_template-reference-design.md`](./_template-reference-design.md)。
 2. 檔名格式：`YYYY-產品型號或代號.md`。
 3. 內容重點不是規格表（PLM 系統都有），而是**當時為什麼這樣決定**與**下次要注意什麼**。
 4. 機密圖面不放入，放內部檔案位置連結。

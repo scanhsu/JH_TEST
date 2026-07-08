@@ -4,9 +4,9 @@
 
 # JH_TEST
 
-## 📚 產品經理知識及方案中心
+## 📚 PLM 產品經理知識及方案中心
 
-PM 團隊知識庫入口：[pm-knowledge-center/](./pm-knowledge-center/README.md)（產品知識分享、CPU/SoC roadmap 資料庫、參考產品庫、工作範圍 wiki、研發流程說明）
+PLM 團隊知識庫入口：[pm-knowledge-center/](./pm-knowledge-center/README.md)（產品知識分享、CPU/SoC roadmap 資料庫、參考產品庫、PLM 工作範圍 wiki、研發流程說明）
 
 ---
 

@@ -2,15 +2,15 @@
 
 > 最後更新：2026-07-08｜維護人：（待指定）
 
-PM 團隊的工作範圍說明與實務要領。新進成員從這裡開始。
+**PLM 產品經理**的工作範圍說明與實務要領，以及與合作對象（PJM / PMC / RD）的協作方式。新進 PLM 從這裡開始。
 
 ## 頁面索引
 
 | 頁面 | 內容 |
 |------|------|
-| [PM 角色與職掌](./pm-roles.md) | PLM / PJM / PMC / MPM 的分工與 job description |
-| [新人入職指南](./onboarding-guide.md) | 第一個月要完成的事：系統帳號、必讀文件、訓練課程 |
-| [工作要領](./work-essentials.md) | 日常實務主題：特材單、EOL、BOM scan、認證、重工…… |
+| [PLM 工作範圍與合作對象](./pm-roles.md) | PLM 的職掌全貌；PJM / PMC / MPM / RD 等合作對象的角色與協作介面 |
+| [新任 PLM 入職指南](./onboarding-guide.md) | 第一個月要完成的事：系統帳號、必讀文件、必修主題 |
+| [工作要領](./work-essentials.md) | PLM 日常實務：roadmap 維護、成本紀律、EOL、認證、與工廠/RD 協作常識 |
 
 ## 相關流程文件
 

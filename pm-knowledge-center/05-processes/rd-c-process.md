@@ -3,6 +3,20 @@
 > 最後更新：2026-07-08｜維護人：（待指定）｜來源：研發C流程簡介_2025_0612.pptx（Jason Huang）
 > 正式依據：**Q410-000 設計／開發管制程序（A3 版）**，本頁為工作摘要。
 
+## PLM 視角速覽
+
+C 流程的日常執行由 **PJM 推進、RD 實作**；PLM 的責任集中在**頭（定義產品）**與**尾（把產品推上市）**，中段以成本追蹤與規格判斷為主：
+
+| 階段 | PLM 責任節點 | 主要靠誰執行 |
+|------|--------------|--------------|
+| Pre-Kick-off / C0 | 可行性分析（價格分析）、**SOW / PSD**、Kick-off Presentation | PLM 主導，RD 提供技術可行性 |
+| C1~C2 | Cost BOM review、規格異動判斷（走 PCR） | PJM / RD / PMC |
+| C3 | Open issue 中 product spec 類的取捨判斷 | PJM 彙整、DQA/RD 驗證 |
+| C4 | **Marketing material**、環境考量面驗證表、定價確認 | PLM 主導 |
+| C5 / Close | 產品上市；結案後歸檔到 [03 參考產品庫](../03-architecture-reference/README.md) | PJM 主導 Close Meeting |
+
+以下為完整流程說明（含 PJM / RD / 各單位分工），PLM 需要看得懂全貌才能對客戶承諾時程與規格。
+
 ## 全貌：專案管理 5 大流程 vs 研發流程
 
 ```
@@ -101,6 +115,8 @@ Chipset Roadmap        →     （SOW / PSD）          →     C1 設計規劃 
 1. DQA 列出 Redmine open issue
 2. PJM 請相關單位對 issue 做出說明及採取措施
 3. PJM 彙整後發給各主管（Sales/Product Spec、EE、SW & FAE、DQA 主管，名單見 [工作要領](../04-wiki-work-scope/work-essentials.md)）
+
+> **PLM 注意**：其中 Sales / Product Spec 類的 issue 需要 PLM 出面做規格取捨判斷（降規、換料或堅持原規格的商業影響）。
 
 ## P4 / C4 工程量試階段
 
