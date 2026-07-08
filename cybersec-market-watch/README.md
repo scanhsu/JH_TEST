@@ -42,7 +42,8 @@ python run.py --offline  # 不連網,用既有資料重新分析與產報告
 
 - **新增廠商**:在 `config/vendors.json` 加一個物件(id、name、feeds、product_patterns)。
 - **新增趨勢主題**:在 `config/trends.json` 加關鍵字組。
-- **更新規格**:廠商發表新品時,更新 `data/specs.json` 並改 `last_reviewed` 日期;
+- **更新規格**:廠商發表新品時,更新 `data/specs.json`(效能對照在 `categories`、
+  硬體規格分析在 `hardware_categories`)並改 `last_reviewed` 日期;
   「二、各廠商近期動態」的產品提及可提示哪些新型號該補進規格表。
 - 單一 RSS 來源失敗不會中斷流程,失敗廠商會列在 log 與 `data/articles.json`
   的 `last_run_stats.failed_feeds`,方便更換來源網址。

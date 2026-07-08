@@ -73,30 +73,47 @@ def render(analysis: dict, specs: dict) -> str:
             add("- (近期無新資料,或資料來源暫時無法連線)")
         add("")
 
+    def render_categories(categories: list) -> None:
+        for category in categories:
+            add(f"### {category['title_zh']}")
+            add("")
+            cols = category["columns"]
+            add("| " + " | ".join(["產品"] + [c["label_zh"] for c in cols]) + " |")
+            add("|" + "---|" * (len(cols) + 1))
+            for p in category["products"]:
+                row = [f"**{p['vendor']}** {p['model']}"]
+                row += [str(p["specs"].get(c["key"], "—")) for c in cols]
+                add("| " + " | ".join(row) + " |")
+            add("")
+            for p in category["products"]:
+                if p.get("note_zh"):
+                    add(f"- **{p['vendor']} {p['model']}**:{p['note_zh']}")
+            add("")
+
     # ── 規格對照 ──
     add("## 三、旗艦產品規格對照")
     add("")
     add(f"> 規格基準資料人工整理自各廠商官方文件,最後校對:{specs.get('last_reviewed', 'N/A')}。")
     add("")
-    for category in specs["categories"]:
-        add(f"### {category['title_zh']}")
+    render_categories(specs["categories"])
+
+    # ── 硬體規格分析 ──
+    if specs.get("hardware_categories"):
+        add("## 四、硬體規格分析")
         add("")
-        cols = category["columns"]
-        add("| " + " | ".join(["產品"] + [c["label_zh"] for c in cols]) + " |")
-        add("|" + "---|" * (len(cols) + 1))
-        for p in category["products"]:
-            row = [f"**{p['vendor']}** {p['model']}"]
-            row += [str(p["specs"].get(c["key"], "—")) for c in cols]
-            add("| " + " | ".join(row) + " |")
+        add("聚焦硬體層面:網路埠配置、加速晶片、記憶體/儲存、電源冗餘與機箱形式。")
         add("")
-        for p in category["products"]:
-            if p.get("note_zh"):
-                add(f"- **{p['vendor']} {p['model']}**:{p['note_zh']}")
-        add("")
+        render_categories(specs["hardware_categories"])
+        if specs.get("hardware_insights_zh"):
+            add("### 硬體層面觀察")
+            add("")
+            for insight in specs["hardware_insights_zh"]:
+                add(f"- {insight}")
+            add("")
 
     # ── 重點觀察 ──
     if specs.get("insights_zh"):
-        add("## 四、重點觀察與趨勢解讀")
+        add("## 五、重點觀察與趨勢解讀")
         add("")
         for insight in specs["insights_zh"]:
             add(f"- {insight}")

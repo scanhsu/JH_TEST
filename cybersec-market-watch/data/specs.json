@@ -147,6 +147,154 @@
       ]
     }
   ],
+  "hardware_categories": [
+    {
+      "id": "hw_highend",
+      "title_zh": "高階 / 資料中心級硬體",
+      "columns": [
+        {"key": "form", "label_zh": "機箱"},
+        {"key": "ports", "label_zh": "網路埠配置"},
+        {"key": "accel", "label_zh": "處理器 / 加速晶片"},
+        {"key": "memory", "label_zh": "記憶體 / 儲存"},
+        {"key": "power", "label_zh": "電源"}
+      ],
+      "products": [
+        {
+          "vendor": "Fortinet",
+          "model": "FortiGate 3500G",
+          "specs": {
+            "form": "機架式",
+            "ports": "2x 400G QSFP-DD、4x 100G QSFP28、30x 25G SFP28、2x 10G RJ45(共 38 埠)",
+            "accel": "3x NP7 + 8x CP10 自研 ASIC(搭配 SP5)",
+            "memory": "—",
+            "power": "雙電源"
+          },
+          "note_zh": "目前對照組中唯一內建 400GbE 介面的 NGFW,為 AI 資料中心東西向流量而生。"
+        },
+        {
+          "vendor": "Sophos",
+          "model": "XGS 8500",
+          "specs": {
+            "form": "2U",
+            "ports": "8x GE 銅纜、12x SFP+ 10GE、2x QSFP28(至 100 Gbps);模組擴充最高 70 埠",
+            "accel": "Xstream Flow Processor(Marvell NPU)",
+            "memory": "256 GB DDR4 ECC 3200",
+            "power": "可選第二顆電源(冗餘)"
+          }
+        },
+        {
+          "vendor": "Sophos",
+          "model": "XGS 7500",
+          "specs": {
+            "form": "2U",
+            "ports": "8x GE 銅纜、12x SFP+ 10GE、2x QSFP28(至 40 Gbps);模組擴充最高 70 埠",
+            "accel": "Xstream Flow Processor(Marvell NPU)",
+            "memory": "128 GB DDR4 ECC 3200",
+            "power": "可選第二顆電源(冗餘)"
+          }
+        },
+        {
+          "vendor": "Check Point",
+          "model": "Quantum Force 29200",
+          "specs": {
+            "form": "2U",
+            "ports": "Base:8x SFP+、2x 10GE 管理、2x SFP28 sync;Plus:16x SFP+ + 4x SFP28",
+            "accel": "x86 平台 + 50+ AI 引擎(軟體加速)",
+            "memory": "128 GB RAM(可選 192/256 GB)/ 960 GB NVMe(Maestro 配置 2x)",
+            "power": "2x AC 1300W(標配冗餘)"
+          },
+          "note_zh": "走通用運算路線,效能提升靠軟體與 AI 引擎最佳化(曾以軟體更新提升 15–25% 吞吐量)。"
+        }
+      ]
+    },
+    {
+      "id": "hw_midrange",
+      "title_zh": "中階 / 企業邊界硬體",
+      "columns": [
+        {"key": "form", "label_zh": "機箱"},
+        {"key": "ports", "label_zh": "網路埠配置"},
+        {"key": "accel", "label_zh": "處理器 / 加速晶片"},
+        {"key": "memory", "label_zh": "記憶體 / 儲存"},
+        {"key": "power", "label_zh": "電源"}
+      ],
+      "products": [
+        {
+          "vendor": "Fortinet",
+          "model": "FortiGate 400G",
+          "specs": {
+            "form": "機架式",
+            "ports": "4x 25G SFP28、4x 10G SFP+、16x 1G SFP、8x 5G BASE-T、HA 2.5G + MGMT 1G",
+            "accel": "NP7 + SP5 自研 ASIC",
+            "memory": "—",
+            "power": "雙 AC 電源(標配冗餘)"
+          },
+          "note_zh": "中階機種即標配 25G 光纖與 5G BASE-T 銅纜,埠密度是同級最高之一。"
+        },
+        {
+          "vendor": "Sophos",
+          "model": "XGS 4500",
+          "specs": {
+            "form": "1U",
+            "ports": "8x GE 銅纜、4x SFP+ 10GE",
+            "accel": "Xstream Flow Processor(Marvell NPU)",
+            "memory": "2x ≥240 GB SATA-III SSD(SW RAID-1)",
+            "power": "可選第二顆電源(冗餘)"
+          }
+        },
+        {
+          "vendor": "Check Point",
+          "model": "Quantum Force 9300",
+          "specs": {
+            "form": "1U",
+            "ports": "Base:8x RJ45 + 管理/sync;Plus:另加 8x SFP+ 10GE;可選 25GbE 模組",
+            "accel": "x86 平台 + AI 引擎",
+            "memory": "16 GB(Base)/ 32 GB(Plus)/ 480 GB SATA SSD",
+            "power": "1x AC(Base)/ 2x AC(Plus,冗餘)"
+          }
+        }
+      ]
+    },
+    {
+      "id": "hw_smb",
+      "title_zh": "SMB / 桌面型硬體",
+      "columns": [
+        {"key": "form", "label_zh": "機箱"},
+        {"key": "connectivity", "label_zh": "連網 / 無線"},
+        {"key": "cooling", "label_zh": "散熱"},
+        {"key": "highlight", "label_zh": "硬體亮點"}
+      ],
+      "products": [
+        {
+          "vendor": "Check Point",
+          "model": "Quantum Spark 2500 系列",
+          "specs": {
+            "form": "桌面型",
+            "connectivity": "Wi-Fi 7、5G WWAN",
+            "cooling": "無風扇",
+            "highlight": "把行動網路備援與 Wi-Fi 7 整合進單一盒子,適合安靜辦公環境"
+          }
+        },
+        {
+          "vendor": "Sophos",
+          "model": "XGS 桌面系列",
+          "specs": {
+            "form": "桌面型",
+            "connectivity": "依型號含 Wi-Fi 選配",
+            "cooling": "低噪音設計",
+            "highlight": "強調省電與能源效率,新一代較前代效能/瓦特比明顯提升"
+          }
+        }
+      ]
+    }
+  ],
+  "hardware_insights_zh": [
+    "**加速晶片路線分歧是最大硬體差異**:Fortinet 走自研 ASIC(NP7 網路處理器 + SP5/CP10 安全處理器,FortiGate 3500G 一台就配 3x NP7 + 8x CP10);Sophos 採 Marvell NPU(Xstream Flow Processor)做 FastPath 卸載;Check Point 則押注通用 x86 + 軟體 AI 引擎,以軟體更新持續釋放效能。Cisco 另闢蹊徑把 DPU 放進 N9300 交換器,防火牆「去盒子化」。",
+    "**介面速率快速升級**:400GbE(QSFP-DD)已出現在 FortiGate 3500G;100GbE(QSFP28)成為高階標配(XGS 8500、FortiGate 3500G);25GbE(SFP28)則下沉到中階(FortiGate 400G 標配 4 埠、Quantum Force 9300 可選模組)——採購時網路埠的世代比吞吐量數字更能決定設備壽命。",
+    "**記憶體與儲存規格反映 TLS/AI 檢測需求**:XGS 8500 配到 256 GB DDR4 ECC、Quantum Force 29200 上 NVMe SSD 且記憶體可擴充至 256 GB;大量併發 TLS 解密與 AI 分析是主要驅動力。",
+    "**電源冗餘從高階標配走向中階標配**:Quantum Force 29200 與 FortiGate 400G 出廠即雙電源,Sophos 全系列可加購第二顆;Check Point 以 Base/Plus 分級把冗餘做成付費選項。",
+    "**模組化擴充決定長期彈性**:Sophos XGS 7500/8500 可擴充至 70 埠、Check Point 走 Base/Plus 配置與 25GbE 擴充模組;固定埠型(如 FortiGate 400G)則以高出廠埠密度取勝。",
+    "**SMB 硬體差異化在連網與靜音**:Wi-Fi 7 + 5G WWAN(Quantum Spark 2500)與無風扇設計成為賣點,反映分公司「一盒搞定連網+安全」的需求。"
+  ],
   "insights_zh": [
     "**AI 安全是 2026 年所有廠商的共同主軸**,且重點已從「用 AI 防禦」(Check Point 50+ AI 引擎、R82.10 的 20 項 AI 功能)進化到「保護 AI 本身」——Fortinet FortiOS 8.0 直接檢測 MCP 與 agent-to-agent 流量,Palo Alto Prisma AIRS 3.0 涵蓋 AI Agent 的發現、紅隊演練到執行期防護。",
     "**Hybrid Mesh Firewall 成為 Gartner 定義的新市場框架**:首屆 Magic Quadrant 由 Palo Alto、Fortinet、Check Point 位居前三;「多種部署型態(硬體/虛擬/雲原生/FWaaS)+ 單一雲端管理平面」正成為採購標準,Gartner 預估 60% 以上企業將同時部署多種防火牆型態。",
@@ -156,6 +304,11 @@
     "**服務與產品持續融合**:Sophos 將併購 Secureworks 取得的 Taegis iSensor IPS 下放到全系列 XGS 防火牆,MDR/NDR 情資直接回饋到網路層防禦,反映「產品 + 託管服務」綁定的市場趨勢。"
   ],
   "sources": [
+    "https://www.checkpoint.com/downloads/products/quantum-force-9300-datasheet.pdf",
+    "https://www.checkpoint.com/downloads/products/quantum-force-29200-datasheet.pdf",
+    "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-3500g-series.pdf",
+    "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/pdf/fortigate-400g-series.pdf",
+    "https://www.sophos.com/en-us/products/next-gen-firewall/xgs-2u-enterprise-campus-edge-firewalls",
     "https://www.sophos.com/en-us/products/next-gen-firewall/firewall-comparison",
     "https://community.sophos.com/sophos-xg-firewall/b/blog/posts/sophos-firewall-v22-mr1-is-now-available",
     "https://www.globenewswire.com/news-release/2025/12/04/3200073/0/en/Check-Point-Software-Unveils-Quantum-Firewall-Software-R82-10-to-Secure-the-AI-Driven-Enterprise.html",
