@@ -1,0 +1,110 @@
+{
+  "vendors": [
+    {
+      "id": "sophos",
+      "name": "Sophos",
+      "feeds": [
+        "https://news.sophos.com/en-us/feed/",
+        "https://community.sophos.com/sophos-xg-firewall/b/blog/rss"
+      ],
+      "product_patterns": [
+        "XGS\\s?\\d{3,4}",
+        "SFOS\\s?v?\\d+(?:\\.\\d+)?",
+        "Sophos Firewall\\s?v\\d+(?:\\s?MR\\d+)?",
+        "Intercept X",
+        "Sophos (?:MDR|NDR|XDR|Central)"
+      ]
+    },
+    {
+      "id": "checkpoint",
+      "name": "Check Point",
+      "feeds": [
+        "https://blog.checkpoint.com/feed/"
+      ],
+      "product_patterns": [
+        "Quantum Force\\s?\\d*",
+        "Quantum Spark\\s?\\d*",
+        "R8\\d(?:\\.\\d+)?",
+        "Infinity(?:\\s(?:Platform|Portal|AI))?",
+        "Harmony(?:\\s(?:SASE|Email|Endpoint|Browse))?",
+        "CloudGuard",
+        "Maestro",
+        "ThreatCloud(?:\\sAI)?"
+      ]
+    },
+    {
+      "id": "fortinet",
+      "name": "Fortinet",
+      "feeds": [
+        "https://feeds.fortinet.com/fortinet/blog/business",
+        "https://www.fortinet.com/blog/rss.xml"
+      ],
+      "product_patterns": [
+        "FortiGate[\\s-]?\\d+[A-Z]?G?",
+        "FortiOS\\s?\\d+(?:\\.\\d+)?",
+        "FortiSASE",
+        "FortiAI",
+        "FortiAnalyzer",
+        "FortiManager",
+        "Security Fabric",
+        "NP7|SP5"
+      ]
+    },
+    {
+      "id": "paloalto",
+      "name": "Palo Alto Networks",
+      "feeds": [
+        "https://www.paloaltonetworks.com/blog/feed/"
+      ],
+      "product_patterns": [
+        "PA-\\d{3,4}\\d*",
+        "PAN-OS\\s?\\d+(?:\\.\\d+)?",
+        "Prisma\\s(?:Access|AIRS|SASE|Cloud)(?:\\s\\d+(?:\\.\\d+)?)?",
+        "Cortex\\s(?:XDR|XSIAM|XSOAR)",
+        "Strata",
+        "Precision AI"
+      ]
+    },
+    {
+      "id": "cisco",
+      "name": "Cisco",
+      "feeds": [
+        "https://blogs.cisco.com/security/feed"
+      ],
+      "product_patterns": [
+        "Hypershield",
+        "Secure Firewall\\s?\\d*",
+        "Firepower\\s?\\d*",
+        "N9\\d{3}[A-Z0-9]*",
+        "Cisco XDR",
+        "Splunk"
+      ]
+    },
+    {
+      "id": "sonicwall",
+      "name": "SonicWall",
+      "feeds": [
+        "https://blog.sonicwall.com/en-us/feed/"
+      ],
+      "product_patterns": [
+        "NSa\\s?\\d+",
+        "NSsp\\s?\\d+",
+        "TZ\\s?\\d+",
+        "SonicOS(?:X)?\\s?\\d*(?:\\.\\d+)?",
+        "Cloud Secure Edge"
+      ]
+    },
+    {
+      "id": "watchguard",
+      "name": "WatchGuard",
+      "feeds": [
+        "https://www.secplicity.org/feed/"
+      ],
+      "product_patterns": [
+        "Firebox\\s?[TM]?\\d+",
+        "ThreatSync",
+        "FireCloud"
+      ]
+    }
+  ]
+}

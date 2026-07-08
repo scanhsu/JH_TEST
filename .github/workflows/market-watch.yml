@@ -1,0 +1,40 @@
+name: Cybersec Market Watch
+
+on:
+  schedule:
+    # 每天 21:00 UTC(台北時間早上 05:00)自動收集與分析
+    - cron: "0 21 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: market-watch
+  cancel-in-progress: false
+
+jobs:
+  collect-and-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 收集資料、分析並產出報告
+        run: python run.py
+        working-directory: cybersec-market-watch
+
+      - name: Commit 更新後的資料與報告
+        run: |
+          git config user.name "market-watch-bot"
+          git config user.email "actions@github.com"
+          git add cybersec-market-watch/data cybersec-market-watch/reports
+          if git diff --cached --quiet; then
+            echo "沒有新資料,略過 commit"
+          else
+            git commit -m "chore(market-watch): daily data collection $(date -u +%F)"
+            git push
+          fi

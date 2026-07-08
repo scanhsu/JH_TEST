@@ -1,0 +1,169 @@
+{
+  "last_reviewed": "2026-07-08",
+  "_comment": "人工校對的官方規格基準。數字取自廠商官方 datasheet / 新聞稿;「—」代表官方未公開或尚未校對。",
+  "categories": [
+    {
+      "id": "datacenter",
+      "title_zh": "資料中心 / 高階企業級防火牆",
+      "columns": [
+        {"key": "fw", "label_zh": "防火牆吞吐量"},
+        {"key": "tp", "label_zh": "威脅防護吞吐量"},
+        {"key": "ipsec", "label_zh": "IPsec VPN"},
+        {"key": "sessions", "label_zh": "併發連線數"},
+        {"key": "highlight", "label_zh": "亮點"}
+      ],
+      "products": [
+        {
+          "vendor": "Fortinet",
+          "model": "FortiGate 3500G",
+          "specs": {"fw": "595 Gbps", "tp": "—", "ipsec": "—", "sessions": "1.79 億", "highlight": "NP7+SP5 晶片、FortiOS 8.0 MCP/AI 流量檢測"},
+          "note_zh": "2026-05 發表,鎖定 AI 資料中心高密度加密流量。"
+        },
+        {
+          "vendor": "Sophos",
+          "model": "XGS 8500",
+          "specs": {"fw": "190 Gbps", "tp": "92.5 Gbps", "ipsec": "141 Gbps", "sessions": "—", "highlight": "QSFP28 100GbE、Xstream TLS 檢測"},
+          "note_zh": "Sophos 旗艦,較次一級型號高出約 47% 防護吞吐量。"
+        },
+        {
+          "vendor": "Sophos",
+          "model": "XGS 7500",
+          "specs": {"fw": "160 Gbps", "tp": "70 Gbps", "ipsec": "117 Gbps", "sessions": "—", "highlight": "園區邊界 2U、40GbE QSFP+"}
+        },
+        {
+          "vendor": "Check Point",
+          "model": "Quantum Force 29200",
+          "specs": {"fw": "—", "tp": "最高 75 Gbps", "ipsec": "—", "sessions": "—", "highlight": "50+ AI 引擎、每機架單位 3 倍威脅防護"},
+          "note_zh": "Quantum Force 資料中心系列;全系列曾透過軟體更新免費提升 15–25% 威脅防護吞吐量。"
+        },
+        {
+          "vendor": "Cisco",
+          "model": "Hypershield + N9300 Smart Switch",
+          "specs": {"fw": "隨交換器規模", "tp": "—", "ipsec": "—", "sessions": "—", "highlight": "DPU 內建於交換器、eBPF、自主規則生命週期"},
+          "note_zh": "非傳統防火牆盒子:安全能力下沉到交換器/主機層,N9324C 提供 24x100G 埠的有狀態 L3/L4 分段。"
+        }
+      ]
+    },
+    {
+      "id": "midrange",
+      "title_zh": "中階 / 園區與企業邊界防火牆",
+      "columns": [
+        {"key": "fw", "label_zh": "防火牆吞吐量"},
+        {"key": "tp", "label_zh": "威脅防護吞吐量"},
+        {"key": "ipsec", "label_zh": "IPsec VPN"},
+        {"key": "ssl", "label_zh": "SSL/TLS 檢測"},
+        {"key": "highlight", "label_zh": "亮點"}
+      ],
+      "products": [
+        {
+          "vendor": "Fortinet",
+          "model": "FortiGate 400G",
+          "specs": {"fw": "164 Gbps", "tp": "—", "ipsec": "—", "ssl": "—", "highlight": "2,800 萬併發連線、企業邊緣定位"}
+        },
+        {
+          "vendor": "Sophos",
+          "model": "XGS 4500",
+          "specs": {"fw": "80 Gbps", "tp": "31.85 Gbps", "ipsec": "75.55 Gbps", "ssl": "10.6 Gbps", "highlight": "1U 分散式邊界"}
+        },
+        {
+          "vendor": "Sophos",
+          "model": "XGS 2300",
+          "specs": {"fw": "39 Gbps", "tp": "5.55 Gbps", "ipsec": "20.5 Gbps", "ssl": "1.45 Gbps", "highlight": "中型企業主力"}
+        },
+        {
+          "vendor": "Check Point",
+          "model": "Quantum Force 9300",
+          "specs": {"fw": "70 Gbps", "tp": "10.5 Gbps", "ipsec": "—", "ssl": "—", "highlight": "模組化 I/O、25GbE 光纖擴充"}
+        },
+        {
+          "vendor": "Palo Alto Networks",
+          "model": "PA-3400 系列",
+          "specs": {"fw": "—", "tp": "—", "ipsec": "—", "ssl": "—", "highlight": "ML-Powered NGFW、專用威脅防護處理資源"},
+          "note_zh": "PAN-OS 12.1 為最新軟體主線;官方吞吐量數字依型號 (3410–3440) 而異,待校對。"
+        }
+      ]
+    },
+    {
+      "id": "smb",
+      "title_zh": "SMB / 分公司與分散據點",
+      "columns": [
+        {"key": "positioning", "label_zh": "定位"},
+        {"key": "connectivity", "label_zh": "連網能力"},
+        {"key": "highlight", "label_zh": "亮點"}
+      ],
+      "products": [
+        {
+          "vendor": "Check Point",
+          "model": "Quantum Spark 2500 系列",
+          "specs": {"positioning": "SMB / 分公司", "connectivity": "Wi-Fi 7、5G", "highlight": "無風扇桌面型、新世代 Spark 平台"},
+          "note_zh": "首波把 Wi-Fi 7 + 5G 帶進 SMB 防火牆市場的產品線之一。"
+        },
+        {
+          "vendor": "Check Point",
+          "model": "Quantum Force 分公司閘道",
+          "specs": {"positioning": "企業分點", "connectivity": "—", "highlight": "威脅防護效能較前代提升 4 倍、99.9% 阻擋率"}
+        },
+        {
+          "vendor": "Sophos",
+          "model": "XGS 桌面系列 (SFOS v21+)",
+          "specs": {"positioning": "分散式邊緣 / SMB", "connectivity": "依型號含 Wi-Fi", "highlight": "省電設計、Sophos Central 雲端統一管理"}
+        }
+      ]
+    },
+    {
+      "id": "software",
+      "title_zh": "軟體平台與 AI 安全布局",
+      "columns": [
+        {"key": "version", "label_zh": "最新版本 / 平台"},
+        {"key": "ai", "label_zh": "AI 能力"},
+        {"key": "direction", "label_zh": "戰略方向"}
+      ],
+      "products": [
+        {
+          "vendor": "Sophos",
+          "model": "SFOS",
+          "specs": {"version": "v22 MR1 (2026)", "ai": "iSensor IPS(整合 Secureworks Taegis)、NDR 主動威脅情資", "direction": "防火牆 × MDR/NDR 服務深度整合"}
+        },
+        {
+          "vendor": "Check Point",
+          "model": "Quantum R82.10 / Infinity",
+          "specs": {"version": "R82.10 (2025-12)", "ai": "20 項新 AI 安全功能、ThreatCloud AI 50+ 引擎", "direction": "Hybrid Mesh + 零信任、AI 驅動企業防護"}
+        },
+        {
+          "vendor": "Fortinet",
+          "model": "FortiOS",
+          "specs": {"version": "8.0 (2026)", "ai": "Shadow AI 偵測、MCP 與 agent-to-agent 流量檢測", "direction": "Security Fabric 單一平台、保護 AI 工作負載"}
+        },
+        {
+          "vendor": "Palo Alto Networks",
+          "model": "PAN-OS / Prisma AIRS",
+          "specs": {"version": "PAN-OS 12.1、Prisma AIRS 3.0 (2026-03)", "ai": "AI Agent 盤點、AI Red Teaming、AI Agent Gateway", "direction": "Agentic AI 全生命週期安全、平台化 (Strata/Prisma/Cortex)"}
+        },
+        {
+          "vendor": "Cisco",
+          "model": "Hypershield",
+          "specs": {"version": "訂閱制持續更新", "ai": "AI 自主撰寫/測試/部署規則", "direction": "安全內嵌於網路基礎設施(Smart Switch/DPU/eBPF)"}
+        }
+      ]
+    }
+  ],
+  "insights_zh": [
+    "**AI 安全是 2026 年所有廠商的共同主軸**,且重點已從「用 AI 防禦」(Check Point 50+ AI 引擎、R82.10 的 20 項 AI 功能)進化到「保護 AI 本身」——Fortinet FortiOS 8.0 直接檢測 MCP 與 agent-to-agent 流量,Palo Alto Prisma AIRS 3.0 涵蓋 AI Agent 的發現、紅隊演練到執行期防護。",
+    "**Hybrid Mesh Firewall 成為 Gartner 定義的新市場框架**:首屆 Magic Quadrant 由 Palo Alto、Fortinet、Check Point 位居前三;「多種部署型態(硬體/虛擬/雲原生/FWaaS)+ 單一雲端管理平面」正成為採購標準,Gartner 預估 60% 以上企業將同時部署多種防火牆型態。",
+    "**硬體軍備競賽仍在加速**:專用晶片決定性能差距——Fortinet NP7/SP5 讓 FortiGate 3500G 達到 595 Gbps 防火牆吞吐量,Check Point 標榜每機架單位 3 倍威脅防護,Cisco 則把 DPU 直接放進 N9300 交換器,讓安全「消失」在網路架構裡。",
+    "**加密與 AI 流量檢測是新戰場**:各家高階平台都強調 TLS/加密流量檢測容量(如 Sophos XGS 8500 的 24 Gbps SSL 檢測),因為 AI 工作負載與加密流量的成長速度遠高於一般流量。",
+    "**SMB 端的差異化走向連網能力**:Wi-Fi 7 與 5G 進入桌面型防火牆(Check Point Quantum Spark 2500),分公司閘道則以「4 倍威脅防護提升」為主要訴求。",
+    "**服務與產品持續融合**:Sophos 將併購 Secureworks 取得的 Taegis iSensor IPS 下放到全系列 XGS 防火牆,MDR/NDR 情資直接回饋到網路層防禦,反映「產品 + 託管服務」綁定的市場趨勢。"
+  ],
+  "sources": [
+    "https://www.sophos.com/en-us/products/next-gen-firewall/firewall-comparison",
+    "https://community.sophos.com/sophos-xg-firewall/b/blog/posts/sophos-firewall-v22-mr1-is-now-available",
+    "https://www.globenewswire.com/news-release/2025/12/04/3200073/0/en/Check-Point-Software-Unveils-Quantum-Firewall-Software-R82-10-to-Secure-the-AI-Driven-Enterprise.html",
+    "https://cybersecurityasia.net/check-point-branch-office-security-gateways/",
+    "https://www.iptrading.com.au/blogs/newsroom/check-point-firewall-sizing-guide-2026-compare-models-from-smb-to-data-center",
+    "https://www.fortinet.com/corporate/about-us/newsroom/press-releases/2026/fortinet-expands-fortigate-g-series-to-secure-ai-from-data-center-to-modern-enterprise-edges",
+    "https://www.paloaltonetworks.com/company/press/2026/palo-alto-networks-secures-agentic-ai-with-prisma-airs-3-0",
+    "https://www.cisco.com/c/en/us/products/collateral/security/hypershield/hypershield-ds.html",
+    "https://www.sdxcentral.com/news/fortinet-palo-alto-networks-top-gartners-hybrid-mesh-firewall-rankings/"
+  ]
+}

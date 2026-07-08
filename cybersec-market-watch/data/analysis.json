@@ -1,0 +1,338 @@
+{
+  "generated": "2026-07-08",
+  "window_days": 90,
+  "article_total": 13,
+  "article_recent": 11,
+  "trends": [
+    {
+      "id": "ai_security",
+      "label_zh": "AI 驅動安全 / GenAI 防護",
+      "total_mentions": 5,
+      "recent_mentions": 4,
+      "recent_by_vendor": {
+        "checkpoint": 3,
+        "fortinet": 1
+      }
+    },
+    {
+      "id": "agentic_ai",
+      "label_zh": "Agentic AI / AI Agent 安全",
+      "total_mentions": 5,
+      "recent_mentions": 4,
+      "recent_by_vendor": {
+        "paloalto": 2,
+        "fortinet": 1,
+        "cisco": 1
+      }
+    },
+    {
+      "id": "zero_trust",
+      "label_zh": "零信任 / ZTNA",
+      "total_mentions": 4,
+      "recent_mentions": 3,
+      "recent_by_vendor": {
+        "checkpoint": 1,
+        "cisco": 1,
+        "paloalto": 1
+      }
+    },
+    {
+      "id": "hybrid_mesh",
+      "label_zh": "混合網狀防火牆 (Hybrid Mesh Firewall)",
+      "total_mentions": 4,
+      "recent_mentions": 3,
+      "recent_by_vendor": {
+        "checkpoint": 1,
+        "cisco": 1,
+        "industry": 1
+      }
+    },
+    {
+      "id": "hardware_accel",
+      "label_zh": "硬體加速 (ASIC/DPU/NPU)",
+      "total_mentions": 2,
+      "recent_mentions": 2,
+      "recent_by_vendor": {
+        "fortinet": 1,
+        "cisco": 1
+      }
+    },
+    {
+      "id": "sase_sse",
+      "label_zh": "SASE / SSE 融合",
+      "total_mentions": 1,
+      "recent_mentions": 1,
+      "recent_by_vendor": {
+        "industry": 1
+      }
+    },
+    {
+      "id": "xdr_mdr",
+      "label_zh": "XDR / MDR 託管偵測回應",
+      "total_mentions": 1,
+      "recent_mentions": 1,
+      "recent_by_vendor": {
+        "sophos": 1
+      }
+    },
+    {
+      "id": "encrypted_traffic",
+      "label_zh": "加密流量檢測 (TLS/SSL Inspection)",
+      "total_mentions": 1,
+      "recent_mentions": 1,
+      "recent_by_vendor": {
+        "sophos": 1
+      }
+    },
+    {
+      "id": "connectivity",
+      "label_zh": "新世代連網 (Wi-Fi 7 / 5G)",
+      "total_mentions": 1,
+      "recent_mentions": 1,
+      "recent_by_vendor": {
+        "checkpoint": 1
+      }
+    },
+    {
+      "id": "quantum_safe",
+      "label_zh": "後量子密碼學 (Post-Quantum)",
+      "total_mentions": 0,
+      "recent_mentions": 0,
+      "recent_by_vendor": {}
+    },
+    {
+      "id": "cloud_security",
+      "label_zh": "雲端 / 混合雲安全",
+      "total_mentions": 0,
+      "recent_mentions": 0,
+      "recent_by_vendor": {}
+    },
+    {
+      "id": "ransomware",
+      "label_zh": "勒索軟體防禦",
+      "total_mentions": 0,
+      "recent_mentions": 0,
+      "recent_by_vendor": {}
+    }
+  ],
+  "vendors": {
+    "sophos": {
+      "name": "Sophos",
+      "recent_count": 3,
+      "recent_articles": [
+        {
+          "collected": "2026-07-08",
+          "date": "",
+          "source": "seed",
+          "summary": "SFOS v22 MR1 introduces iSensor IPS technology from the Secureworks Taegis platform, providing NDR Active Threat Intelligence with curated IPS detection patterns. Detection extended to interactive/reverse shell compromises, blocking related TCP/UDP command and control activity across the full XGS Series lineup.",
+          "title": "Sophos Firewall v22 MR1 is Now Available",
+          "url": "https://community.sophos.com/sophos-xg-firewall/b/blog/posts/sophos-firewall-v22-mr1-is-now-available",
+          "vendor": "sophos"
+        },
+        {
+          "collected": "2026-07-08",
+          "date": "",
+          "source": "seed",
+          "summary": "XGS 7500 and XGS 8500 campus edge firewalls: up to 190 Gbps firewall throughput, 92.5 Gbps threat protection, QSFP28 ports up to 100 Gbps, Xstream architecture with TLS inspection.",
+          "title": "Firewall performance for the campus edge with the XGS 7500 and XGS 8500",
+          "url": "https://www.sophos.com/en-us/blog/firewall-performance-for-the-campus-edge-with-the-new-xgs-7500-and-xgs-8500",
+          "vendor": "sophos"
+        },
+        {
+          "collected": "2026-07-08",
+          "date": "",
+          "source": "seed",
+          "summary": "New XGS series desktop firewall appliances for distributed edge with SFOS v21, improved performance and energy efficiency for SMB and branch deployments.",
+          "title": "Sophos Firewall: New XGS Series Desktop Firewalls and SFOS v21",
+          "url": "https://www.sophos.com/en-us/blog/sophos-firewall-new-xgs-series-desktop-firewalls-and-sfos-v21",
+          "vendor": "sophos"
+        }
+      ],
+      "top_products": [
+        [
+          "XGS 7500",
+          2
+        ],
+        [
+          "XGS 8500",
+          2
+        ],
+        [
+          "SFOS v21",
+          2
+        ],
+        [
+          "SFOS v22",
+          1
+        ],
+        [
+          "Sophos Firewall v22 MR1",
+          1
+        ]
+      ]
+    },
+    "checkpoint": {
+      "name": "Check Point",
+      "recent_count": 3,
+      "recent_articles": [
+        {
+          "collected": "2026-07-08",
+          "date": "",
+          "source": "seed",
+          "summary": "New AI security capabilities and elevated zero trust across the hybrid mesh: cloud and on-prem firewalls managed under the Infinity Platform.",
+          "title": "Defend Against the Latest Cyber Threats with AI Security and Expanded Zero Trust for Hybrid Mesh Cloud and On-Prem Firewalls",
+          "url": "https://blog.checkpoint.com/securing-the-network/new-ai-security-and-elevated-zero-trust-across-the-hybrid-mesh-cloud-and-on-prem-firewalls/",
+          "vendor": "checkpoint"
+        },
+        {
+          "collected": "2026-07-08",
+          "date": "",
+          "source": "seed",
+          "summary": "AI-powered Quantum Force Branch Office Security Gateways with up to 4x threat prevention increase and 99.9% block rate. Quantum Spark 2500 series brings Wi-Fi 7 and 5G connectivity to the SMB market with fanless desktop units.",
+          "title": "Check Point Launches New Branch Office Security Gateways with 4x Faster Threat Prevention Performance",
+          "url": "https://cybersecurityasia.net/check-point-branch-office-security-gateways/",
+          "vendor": "checkpoint"
+        },
+        {
+          "collected": "2026-07-08",
+          "date": "",
+          "source": "seed",
+          "summary": "Ten new Quantum Force firewalls deliver up to 3x higher threat prevention performance per rack unit; all data center and perimeter gateways receive a 15%-25% threat prevention throughput boost via software update. 50+ AI engines, up to 1 Tbps AI-fuelled threat prevention, 99.8% malware block rate.",
+          "title": "Check Point announces advancements to Quantum Force Security Gateways",
+          "url": "https://finance.yahoo.com/news/check-point-announces-advancements-quantum-131052190.html",
+          "vendor": "checkpoint"
+        }
+      ],
+      "top_products": [
+        [
+          "Quantum Force",
+          3
+        ],
+        [
+          "R82.10",
+          2
+        ],
+        [
+          "Infinity Platform",
+          1
+        ],
+        [
+          "Quantum Spark 2500",
+          1
+        ]
+      ]
+    },
+    "fortinet": {
+      "name": "Fortinet",
+      "recent_count": 1,
+      "recent_articles": [
+        {
+          "collected": "2026-07-08",
+          "date": "2026-05-06",
+          "source": "seed",
+          "summary": "FortiGate 3500G delivers 595 Gbps firewall throughput and 179 million concurrent sessions for data centers; FortiGate 400G delivers 164 Gbps and 28 million sessions for the enterprise edge. Powered by NP7 and SP5 processors. FortiOS 8.0 adds inspection of MCP and agent-to-agent traffic plus native shadow AI detection across the Security Fabric.",
+          "title": "Fortinet Expands FortiGate G Series to Secure AI from the Data Center to Modern Enterprise Edges",
+          "url": "https://www.fortinet.com/corporate/about-us/newsroom/press-releases/2026/fortinet-expands-fortigate-g-series-to-secure-ai-from-data-center-to-modern-enterprise-edges",
+          "vendor": "fortinet"
+        }
+      ],
+      "top_products": [
+        [
+          "FortiGate 3500G",
+          1
+        ],
+        [
+          "FortiGate 400G",
+          1
+        ],
+        [
+          "FortiOS 8.0",
+          1
+        ],
+        [
+          "Security Fabric",
+          1
+        ],
+        [
+          "NP7",
+          1
+        ],
+        [
+          "SP5",
+          1
+        ]
+      ]
+    },
+    "paloalto": {
+      "name": "Palo Alto Networks",
+      "recent_count": 2,
+      "recent_articles": [
+        {
+          "collected": "2026-07-08",
+          "date": "",
+          "source": "seed",
+          "summary": "Idira is a next-generation identity security platform built for the AI enterprise, extending zero trust identity controls to human and AI agent identities.",
+          "title": "Palo Alto Networks Introduces Idira: the Next-Generation Identity Security Platform Built for the AI Enterprise",
+          "url": "https://www.paloaltonetworks.com/company/press/2026/palo-alto-networks-introduces-idira--the-next-generation-identity-security-platform-built-for-the-ai-enterprise",
+          "vendor": "paloalto"
+        },
+        {
+          "collected": "2026-07-08",
+          "date": "2026-06-01",
+          "source": "seed",
+          "summary": "A unified image consolidates VM-Series and AI Runtime Firewall (AIRS VM) into a single software version with license-driven operational mode and seamless runtime model updates without reboot. AI Red Teaming adds Privilege Misuse attack category aligned with the OWASP Top 10 for Agentic Systems.",
+          "title": "Prisma AIRS June 2026 update: unified VM-Series / AI Runtime Firewall image",
+          "url": "https://docs.paloaltonetworks.com/ai-runtime-security/new-features/by-date/prisma-airs/june-2026",
+          "vendor": "paloalto"
+        }
+      ],
+      "top_products": [
+        [
+          "Prisma AIRS 3.0",
+          2
+        ],
+        [
+          "Prisma AIRS",
+          1
+        ]
+      ]
+    },
+    "cisco": {
+      "name": "Cisco",
+      "recent_count": 1,
+      "recent_articles": [
+        {
+          "collected": "2026-07-08",
+          "date": "",
+          "source": "seed",
+          "summary": "Cisco expands Hypershield integrations and agentic AI defenses. N9300 Series Smart Switches use programmable DPUs to enforce stateful L3/L4 segmentation directly in the switch; Hypershield uses eBPF kernel-level visibility and autonomous rule lifecycle management within the hybrid mesh firewall ecosystem.",
+          "title": "Cisco Live: Security focus yields new firewalls, Hypershield integrations, and agentic AI defenses",
+          "url": "https://www.networkworld.com/article/4004804/cisco-live-security-focus-yields-new-firewalls-hypershield-integrations-and-agentic-ai-defenses.html",
+          "vendor": "cisco"
+        }
+      ],
+      "top_products": [
+        [
+          "Hypershield",
+          3
+        ],
+        [
+          "N9300",
+          1
+        ]
+      ]
+    },
+    "sonicwall": {
+      "name": "SonicWall",
+      "recent_count": 0,
+      "recent_articles": [],
+      "top_products": []
+    },
+    "watchguard": {
+      "name": "WatchGuard",
+      "recent_count": 0,
+      "recent_articles": [],
+      "top_products": []
+    }
+  }
+}

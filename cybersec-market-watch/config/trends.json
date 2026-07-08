@@ -1,0 +1,64 @@
+{
+  "trends": [
+    {
+      "id": "ai_security",
+      "label_zh": "AI 驅動安全 / GenAI 防護",
+      "keywords": ["ai-powered", "ai powered", "genai", "generative ai", "ai security", "ai engine", "ai-driven", "ai driven", "machine learning", "ml-powered", "deep learning", "shadow ai", "ai threat"]
+    },
+    {
+      "id": "agentic_ai",
+      "label_zh": "Agentic AI / AI Agent 安全",
+      "keywords": ["agentic", "ai agent", "autonomous agent", "mcp", "model context protocol", "agent-to-agent", "ai runtime"]
+    },
+    {
+      "id": "zero_trust",
+      "label_zh": "零信任 / ZTNA",
+      "keywords": ["zero trust", "ztna", "zero-trust", "least privilege", "microsegmentation", "micro-segmentation", "segmentation"]
+    },
+    {
+      "id": "sase_sse",
+      "label_zh": "SASE / SSE 融合",
+      "keywords": ["sase", "sse", "secure access service edge", "security service edge", "sd-wan", "cloud secure edge"]
+    },
+    {
+      "id": "hybrid_mesh",
+      "label_zh": "混合網狀防火牆 (Hybrid Mesh Firewall)",
+      "keywords": ["hybrid mesh", "firewall-as-a-service", "fwaas", "unified management", "single console", "cloud-based control plane", "hybrid cloud firewall"]
+    },
+    {
+      "id": "xdr_mdr",
+      "label_zh": "XDR / MDR 託管偵測回應",
+      "keywords": ["xdr", "mdr", "managed detection", "extended detection", "edr", "ndr", "threat hunting", "soc "]
+    },
+    {
+      "id": "quantum_safe",
+      "label_zh": "後量子密碼學 (Post-Quantum)",
+      "keywords": ["post-quantum", "quantum-safe", "pqc", "quantum computing threat", "quantum-resistant"]
+    },
+    {
+      "id": "cloud_security",
+      "label_zh": "雲端 / 混合雲安全",
+      "keywords": ["cloud security", "cloud-native", "cnapp", "container security", "kubernetes", "multi-cloud", "hybrid cloud"]
+    },
+    {
+      "id": "ransomware",
+      "label_zh": "勒索軟體防禦",
+      "keywords": ["ransomware", "extortion", "encryptor", "data exfiltration"]
+    },
+    {
+      "id": "encrypted_traffic",
+      "label_zh": "加密流量檢測 (TLS/SSL Inspection)",
+      "keywords": ["tls inspection", "ssl inspection", "encrypted traffic", "decryption", "tls 1.3", "quic"]
+    },
+    {
+      "id": "hardware_accel",
+      "label_zh": "硬體加速 (ASIC/DPU/NPU)",
+      "keywords": ["asic", "dpu", "npu", "data processing unit", "hardware acceleration", "ebpf", "smart switch", "custom processor", "np7", "sp5"]
+    },
+    {
+      "id": "connectivity",
+      "label_zh": "新世代連網 (Wi-Fi 7 / 5G)",
+      "keywords": ["wi-fi 7", "wifi 7", "5g", "wi-fi 6e", "wireless wan"]
+    }
+  ]
+}
