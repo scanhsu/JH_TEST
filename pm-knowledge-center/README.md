@@ -28,6 +28,16 @@
 - **結案歸檔**：專案 Close Meeting 後，用 [03 範本](./03-architecture-reference/_template-reference-design.md) 建一頁產品案例，把選型理由與 Lesson & Learn 留下來。
 - **流程修訂**：流程或表單改版時，同步更新 [05 流程說明](./05-processes/README.md) 並在頁面標註版本與日期。
 
+## 目前狀態與待補
+
+本庫為**骨架完整、部分內容待團隊補實**的狀態。所有待補項目彙整在 👉 [待補清單-TODO.md](./待補清單-TODO.md)（依「需真實資料 / 需 PLM 專業內容 / 需持續更新」分三級，方便分派認領）。
+
+## 怎麼在 GitHub 上使用
+
+- **閱讀**：在 GitHub 網頁上點進各 `.md` 檔即可閱讀，頁面間的連結可直接點著走；`.pptx` 附件點「Download」或「View raw」下載後用 PowerPoint 開。
+- **新增/修改內容**：小修改可直接在 GitHub 網頁上按檔案右上角鉛筆圖示編輯後提交；較多內容建議 clone 到本機用 VS Code 編輯再 push。
+- **新增一頁**：從對應區的 `_template-*.md` 複製一份改名，寫完後回該區 README 的索引表加一列。
+
 ## 維護原則
 
 - 每頁頂端標註 **最後更新日期** 與 **維護人**。
