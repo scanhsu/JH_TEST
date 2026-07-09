@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+/* 深色儀表板色票（依 dataviz 深色面驗證過的階數） */
+@theme {
+  --font-sans: "Noto Sans TC", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --color-market-page: #0d0d0d;   /* 頁面底色 */
+  --color-market-card: #1a1a19;   /* 圖表 / 卡片表面 */
+  --color-market-ink: #ffffff;    /* 主要文字 */
+  --color-market-ink2: #c3c2b7;   /* 次要文字 */
+  --color-market-muted: #898781;  /* 軸線 / 註解文字 */
+  --color-market-grid: #2c2c2a;   /* 格線 */
+  --color-market-line: #383835;   /* 基準線 / 分隔 */
+  --color-market-bull: #0ca30c;   /* 看多（深色面 5.19:1） */
+  --color-market-bear: #d03b3b;   /* 看空（深色面 3.62:1） */
+  --color-market-accent: #3987e5; /* 單一序列（趨勢線） */
+  --color-market-warn: #fab219;   /* 示範資料標記 */
+}
+
+body {
+  background-color: #0d0d0d;
+  color: #ffffff;
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0d0d0d; }
+::-webkit-scrollbar-thumb { background: #383835; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #52514e; }

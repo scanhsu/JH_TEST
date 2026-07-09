@@ -1,5 +1,5 @@
 {
-  "name": "CAP Level Up (會考大師)",
-  "description": "A gamified CAP (會考) preparation app designed for efficiency. Short battles, instant feedback, and RPG-style progression tracking.",
+  "name": "美股市場情緒監測器",
+  "description": "彙整 X (Twitter)、Reddit、StockTwits 的社群討論，以金融詞典式情緒分析即時評估美股市場多空方向，輸出 0-100 綜合情緒指數。",
   "requestFramePermissions": []
 }

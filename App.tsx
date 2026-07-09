@@ -1,219 +1,150 @@
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Activity, RefreshCw } from 'lucide-react';
+import { MonitorState, SentimentSnapshot } from './types';
+import { aggregate } from './services/sentimentEngine';
+import { fetchRedditPosts } from './services/redditService';
+import { fetchStocktwitsPosts } from './services/stocktwitsService';
+import { fetchXPosts } from './services/xService';
+import { SentimentGauge } from './components/SentimentGauge';
+import { SourceBreakdown } from './components/SourceBreakdown';
+import { TrendChart } from './components/TrendChart';
+import { TickerBoard } from './components/TickerBoard';
+import { PostFeed } from './components/PostFeed';
+import { Card } from './components/ui';
 
-import React, { useState, useEffect } from 'react';
-import { Navbar } from './components/Navbar';
-import { Dashboard } from './components/Dashboard';
-import { QuizBattle } from './components/QuizBattle';
-import { ResultModal } from './components/ResultModal';
-import { Login } from './components/Login';
-import { GameState, Subject, UserStats, QuizQuestion, BattleResult, UserProfile, BattleRecord } from './types';
-import { generateQuiz } from './services/geminiService';
-import { Loader2 } from 'lucide-react';
+const HISTORY_KEY = 'us_sentiment_history_v1';
+const MAX_HISTORY = 96;
+const MIN_SAMPLE_GAP_MS = 3 * 60_000; // 至少間隔 3 分鐘才寫入新取樣點
+const REFRESH_INTERVAL_MS = 5 * 60_000;
 
-const STORAGE_KEY = 'cap_level_up_user_stats';
-const USER_STORAGE_KEY = 'cap_level_up_user_profile';
-
-// Initial Stats including Test Data records
-const INITIAL_STATS: UserStats = {
-  level: 3,
-  xp: 450,
-  xpToNextLevel: 1000,
-  streak: 5,
-  battlesWon: 12,
-  mastery: {
-    [Subject.Chinese]: 45,
-    [Subject.English]: 60,
-    [Subject.Math]: 30,
-    [Subject.Science]: 55,
-    [Subject.Social]: 70,
-  },
-  history: [
-    { 
-      id: 'test-1', 
-      date: new Date(Date.now() - 86400000 * 2).toISOString(), 
-      subject: Subject.Math, 
-      score: 2, 
-      totalQuestions: 3, 
-      xpGained: 250 
-    },
-    { 
-      id: 'test-2', 
-      date: new Date(Date.now() - 86400000).toISOString(), 
-      subject: Subject.English, 
-      score: 3, 
-      totalQuestions: 3, 
-      xpGained: 350 
-    },
-  ]
-};
+function loadHistory(): SentimentSnapshot[] {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (err) {
+    console.error('讀取歷史取樣失敗：', err);
+  }
+  return [];
+}
 
 const App: React.FC = () => {
-  // Auth State
-  const [user, setUser] = useState<UserProfile | null>(() => {
-    const savedUser = localStorage.getItem(USER_STORAGE_KEY);
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  const [state, setState] = useState<MonitorState | null>(null);
+  const [history, setHistory] = useState<SentimentSnapshot[]>(loadHistory);
+  const [refreshing, setRefreshing] = useState(false);
+  const inFlight = useRef(false);
 
-  const [gameState, setGameState] = useState<GameState>(GameState.Dashboard);
-  
-  // Stats State
-  const [userStats, setUserStats] = useState<UserStats>(() => {
+  const refresh = useCallback(async () => {
+    if (inFlight.current) return;
+    inFlight.current = true;
+    setRefreshing(true);
     try {
-      const savedStats = localStorage.getItem(STORAGE_KEY);
-      if (savedStats) {
-        return JSON.parse(savedStats);
-      }
-    } catch (error) {
-      console.error('Failed to load stats from storage:', error);
-    }
-    return INITIAL_STATS;
-  });
-
-  // Persistence
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(userStats));
-  }, [userStats]);
-
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-    } else {
-      localStorage.removeItem(USER_STORAGE_KEY);
-    }
-  }, [user]);
-
-  const [currentQuestions, setCurrentQuestions] = useState<QuizQuestion[]>([]);
-  const [lastResult, setLastResult] = useState<BattleResult | null>(null);
-  const [activeSubject, setActiveSubject] = useState<Subject | null>(null);
-  const [hasLevelledUp, setHasLevelledUp] = useState(false);
-
-  const handleLogin = () => {
-    // Mock user profile from Google
-    const mockUser: UserProfile = {
-      name: 'Exam Warrior',
-      email: 'warrior@example.com',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'
-    };
-    setUser(mockUser);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    setGameState(GameState.Dashboard);
-  };
-
-  const handleStartBattle = async (subject: Subject) => {
-    setGameState(GameState.Preparing);
-    setActiveSubject(subject);
-    setHasLevelledUp(false);
-    
-    // Simulate minimum loading time for UX + Fetch
-    const [questions] = await Promise.all([
-      generateQuiz(subject, userStats.level),
-      new Promise(resolve => setTimeout(resolve, 1500)) // Min 1.5s load to show cool animation
-    ]);
-    
-    setCurrentQuestions(questions);
-    setGameState(GameState.Battle);
-  };
-
-  const handleBattleComplete = (result: BattleResult) => {
-    setLastResult(result);
-    
-    // Update stats
-    setUserStats(prev => {
-      const newXp = prev.xp + result.xpGained;
-      let newLevel = prev.level;
-      let newXpToNext = prev.xpToNextLevel;
-      let currentXp = newXp;
-
-      // Simple level up logic
-      let didLevelUp = false;
-      if (currentXp >= prev.xpToNextLevel) {
-        newLevel += 1;
-        currentXp = currentXp - prev.xpToNextLevel;
-        newXpToNext = Math.floor(prev.xpToNextLevel * 1.2);
-        didLevelUp = true;
-      }
-      setHasLevelledUp(didLevelUp);
-
-      // Update mastery & Calculate Score
-      let newMastery = { ...prev.mastery };
-      const correctCount = result.userAnswers.filter((ans, i) => ans === result.questions[i].correctIndex).length;
-      
-      if (activeSubject) {
-        const percentage = correctCount / result.questions.length;
-        // Increase mastery if performance was good
-        if (percentage >= 0.5) {
-           // Gain between 2-5 points based on accuracy
-           const gain = Math.floor(percentage * 5) + 1;
-           newMastery[activeSubject] = Math.min(100, newMastery[activeSubject] + gain);
+      const results = await Promise.all([
+        fetchXPosts(),
+        fetchRedditPosts(),
+        fetchStocktwitsPosts(),
+      ]);
+      const next = aggregate(results);
+      setState(next);
+      setHistory((prev) => {
+        const last = prev[prev.length - 1];
+        if (last && Date.now() - new Date(last.timestamp).getTime() < MIN_SAMPLE_GAP_MS) {
+          return prev;
         }
-      }
+        const updated = [
+          ...prev,
+          { timestamp: next.assessment.generatedAt, index: next.assessment.index },
+        ].slice(-MAX_HISTORY);
+        try {
+          localStorage.setItem(HISTORY_KEY, JSON.stringify(updated));
+        } catch (err) {
+          console.error('寫入歷史取樣失敗：', err);
+        }
+        return updated;
+      });
+    } finally {
+      inFlight.current = false;
+      setRefreshing(false);
+    }
+  }, []);
 
-      // Create Record
-      const newRecord: BattleRecord = {
-        id: `battle-${Date.now()}`,
-        date: new Date().toISOString(),
-        subject: activeSubject || Subject.Chinese, // Fallback
-        score: correctCount,
-        totalQuestions: result.questions.length,
-        xpGained: result.xpGained
-      };
-      
-      return {
-        ...prev,
-        level: newLevel,
-        xp: currentXp,
-        xpToNextLevel: newXpToNext,
-        battlesWon: prev.battlesWon + 1,
-        mastery: newMastery,
-        history: [...prev.history, newRecord]
-      };
-    });
-
-    setGameState(GameState.Result);
-  };
-
-  const handleReturnHome = () => {
-    setGameState(GameState.Dashboard);
-    setLastResult(null);
-    setCurrentQuestions([]);
-    setActiveSubject(null);
-    setHasLevelledUp(false);
-  };
-
-  // If not logged in, show Login screen
-  if (!user) {
-    return <Login onLogin={handleLogin} />;
-  }
+  useEffect(() => {
+    refresh();
+    const timer = setInterval(refresh, REFRESH_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [refresh]);
 
   return (
-    <div className="min-h-screen bg-gaming-bg text-slate-200 font-sans">
-      <Navbar stats={userStats} user={user} onLogout={handleLogout} />
-      
-      <main className="relative">
-        {gameState === GameState.Dashboard && (
-          <Dashboard stats={userStats} onStartBattle={handleStartBattle} />
-        )}
+    <div className="min-h-screen bg-market-page text-market-ink">
+      <header className="border-b border-white/10 bg-market-card/60 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-4">
+          <Activity className="text-market-accent" size={22} aria-hidden />
+          <div>
+            <h1 className="text-lg font-bold">美股市場情緒監測器</h1>
+            <p className="text-xs text-market-muted">
+              彙整 X・Reddit・StockTwits 社群討論，即時評估市場多空方向
+            </p>
+          </div>
+          <div className="ml-auto flex items-center gap-3">
+            {state && (
+              <span className="hidden text-xs tabular-nums text-market-muted sm:block">
+                更新於{' '}
+                {new Date(state.assessment.generatedAt).toLocaleTimeString('zh-TW', {
+                  hour12: false,
+                })}
+              </span>
+            )}
+            <button
+              onClick={refresh}
+              disabled={refreshing}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-market-line/50 px-3 py-1.5 text-sm text-market-ink2 transition hover:bg-market-line disabled:opacity-50"
+            >
+              <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} aria-hidden />
+              重新整理
+            </button>
+          </div>
+        </div>
+      </header>
 
-        {gameState === GameState.Preparing && (
-          <div className="h-[80vh] flex flex-col items-center justify-center text-center">
-            <div className="relative w-24 h-24 mb-8">
-               <div className="absolute inset-0 border-4 border-gaming-primary/30 rounded-full animate-ping"></div>
-               <div className="absolute inset-0 border-4 border-t-gaming-primary border-r-gaming-secondary border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-            </div>
-            <h2 className="text-2xl font-bold font-display text-white mb-2">GENERATING BATTLE...</h2>
-            <p className="text-slate-400">Searching the archives for {activeSubject} challenges</p>
+      <main className="mx-auto max-w-6xl px-4 py-6">
+        {!state ? (
+          <div className="flex h-[60vh] flex-col items-center justify-center gap-3 text-market-muted">
+            <RefreshCw className="animate-spin" size={28} aria-hidden />
+            正在收集社群討論…
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <Card className="lg:col-span-1">
+              <SentimentGauge assessment={state.assessment} />
+            </Card>
+
+            <Card title="各來源情緒分佈" className="lg:col-span-2">
+              <SourceBreakdown summaries={state.summaries} />
+            </Card>
+
+            <Card title="情緒指數趨勢" className="lg:col-span-2">
+              <TrendChart history={history} />
+            </Card>
+
+            <Card title="熱門討論標的" className="lg:col-span-1">
+              <TickerBoard tickers={state.tickers} />
+            </Card>
+
+            <Card title="熱門貼文" className="lg:col-span-3">
+              <PostFeed posts={state.posts} />
+            </Card>
           </div>
         )}
 
-        {gameState === GameState.Battle && (
-          <QuizBattle questions={currentQuestions} onComplete={handleBattleComplete} />
-        )}
-
-        {gameState === GameState.Result && lastResult && (
-          <ResultModal result={lastResult} levelUp={hasLevelledUp} onHome={handleReturnHome} />
-        )}
+        <footer className="mt-8 space-y-1 border-t border-white/10 pt-4 text-xs leading-relaxed text-market-muted">
+          <p>
+            評分方法：金融詞典式文本分析（含否定詞處理與 StockTwits 使用者標記），
+            貼文以互動量對數加權，各來源以樣本數平方根加權合成 0–100 指數；50 為多空分界。
+          </p>
+          <p>
+            標示「示範資料」的來源代表 API 目前不可用或未設定金鑰（X 需在 .env.local
+            設定 VITE_X_BEARER_TOKEN）。本工具僅供研究參考，非投資建議。
+          </p>
+        </footer>
       </main>
     </div>
   );
