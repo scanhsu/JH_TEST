@@ -29,6 +29,15 @@
 
 填入 aisstream.io API Key 後即切換為真實船位，航跡會存於瀏覽器 localStorage 逐步累積（保留 5 天）。
 
+金鑰有兩種設定方式（擇一）：
+
+1. 畫面左上角「⚙️ 設定」貼上（存在瀏覽器 localStorage）
+2. 專案根目錄建立 `.env.local`（已被 .gitignore 排除，不會進版本庫）：
+
+   ```
+   VITE_AIS_API_KEY=你的金鑰
+   ```
+
 ## 本機執行
 
 ```bash

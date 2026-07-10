@@ -18,6 +18,10 @@ import { computeComfort } from './services/comfortService';
 const SETTINGS_KEY = 'costa_serena_settings_v1';
 const TRACK_DAYS = 5;
 
+// 可在專案根目錄建立 .env.local 設定 VITE_AIS_API_KEY，作為預設金鑰
+// （.env.local 已被 .gitignore 排除，不會進版本庫）
+const ENV_AIS_KEY: string = (import.meta as any).env?.VITE_AIS_API_KEY ?? '';
+
 interface Settings {
   aisApiKey: string;
   mmsi: string;
@@ -26,9 +30,15 @@ interface Settings {
 function loadSettings(): Settings {
   try {
     const raw = localStorage.getItem(SETTINGS_KEY);
-    if (raw) return { mmsi: SHIP_INFO.defaultMmsi, aisApiKey: '', ...JSON.parse(raw) };
+    if (raw) {
+      const saved = JSON.parse(raw);
+      return {
+        aisApiKey: saved.aisApiKey || ENV_AIS_KEY,
+        mmsi: saved.mmsi || SHIP_INFO.defaultMmsi,
+      };
+    }
   } catch { /* ignore */ }
-  return { aisApiKey: '', mmsi: SHIP_INFO.defaultMmsi };
+  return { aisApiKey: ENV_AIS_KEY, mmsi: SHIP_INFO.defaultMmsi };
 }
 
 const App: React.FC = () => {
