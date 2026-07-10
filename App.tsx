@@ -1,220 +1,211 @@
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ShipMap } from './components/ShipMap';
+import { InfoPanel } from './components/InfoPanel';
+import { LayerControl, SettingsModal, WaveLegend } from './components/Controls';
+import {
+  ComfortResult, DataSource, HourlyForecast, MapLayerKey, MarineWeather,
+  ShipPosition, TrackPoint, WeatherGrid,
+} from './types';
+import {
+  SHIP_INFO, connectAisStream, getDemoPosition, getDemoTrack,
+  appendStoredTrack, loadStoredTrack, loadLastPosition, saveLastPosition, AisHandle,
+} from './services/shipService';
+import {
+  fetchRainTileUrl, fetchShipForecast, fetchShipWeather, fetchWeatherGrid,
+} from './services/weatherService';
+import { computeComfort } from './services/comfortService';
 
-import React, { useState, useEffect } from 'react';
-import { Navbar } from './components/Navbar';
-import { Dashboard } from './components/Dashboard';
-import { QuizBattle } from './components/QuizBattle';
-import { ResultModal } from './components/ResultModal';
-import { Login } from './components/Login';
-import { GameState, Subject, UserStats, QuizQuestion, BattleResult, UserProfile, BattleRecord } from './types';
-import { generateQuiz } from './services/geminiService';
-import { Loader2 } from 'lucide-react';
+const SETTINGS_KEY = 'costa_serena_settings_v1';
+const TRACK_DAYS = 5;
 
-const STORAGE_KEY = 'cap_level_up_user_stats';
-const USER_STORAGE_KEY = 'cap_level_up_user_profile';
+// 可在專案根目錄建立 .env.local 設定 VITE_AIS_API_KEY，作為預設金鑰
+// （.env.local 已被 .gitignore 排除，不會進版本庫）
+const ENV_AIS_KEY: string = (import.meta as any).env?.VITE_AIS_API_KEY ?? '';
 
-// Initial Stats including Test Data records
-const INITIAL_STATS: UserStats = {
-  level: 3,
-  xp: 450,
-  xpToNextLevel: 1000,
-  streak: 5,
-  battlesWon: 12,
-  mastery: {
-    [Subject.Chinese]: 45,
-    [Subject.English]: 60,
-    [Subject.Math]: 30,
-    [Subject.Science]: 55,
-    [Subject.Social]: 70,
-  },
-  history: [
-    { 
-      id: 'test-1', 
-      date: new Date(Date.now() - 86400000 * 2).toISOString(), 
-      subject: Subject.Math, 
-      score: 2, 
-      totalQuestions: 3, 
-      xpGained: 250 
-    },
-    { 
-      id: 'test-2', 
-      date: new Date(Date.now() - 86400000).toISOString(), 
-      subject: Subject.English, 
-      score: 3, 
-      totalQuestions: 3, 
-      xpGained: 350 
-    },
-  ]
-};
+interface Settings {
+  aisApiKey: string;
+  mmsi: string;
+}
+
+function loadSettings(): Settings {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      // 遷移：舊版曾預設錯誤的 MMSI，自動更正為正確船號
+      const mmsi = !saved.mmsi || saved.mmsi === '247281000' ? SHIP_INFO.defaultMmsi : saved.mmsi;
+      return { aisApiKey: saved.aisApiKey || ENV_AIS_KEY, mmsi };
+    }
+  } catch { /* ignore */ }
+  return { aisApiKey: ENV_AIS_KEY, mmsi: SHIP_INFO.defaultMmsi };
+}
 
 const App: React.FC = () => {
-  // Auth State
-  const [user, setUser] = useState<UserProfile | null>(() => {
-    const savedUser = localStorage.getItem(USER_STORAGE_KEY);
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
+  const [settings, setSettings] = useState<Settings>(loadSettings);
+  const [position, setPosition] = useState<ShipPosition | null>(null);
+  const [track, setTrack] = useState<TrackPoint[]>([]);
+  const [weather, setWeather] = useState<MarineWeather | null>(null);
+  const [forecast, setForecast] = useState<HourlyForecast[]>([]);
+  const [grid, setGrid] = useState<WeatherGrid | null>(null);
+  const [rainTileUrl, setRainTileUrl] = useState<string | null>(null);
+  const [activeLayers, setActiveLayers] = useState<Set<MapLayerKey>>(new Set(['wave', 'wind']));
+  const [followShip, setFollowShip] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [aisStatus, setAisStatus] = useState<string | null>(null);
+  const [aisDetail, setAisDetail] = useState<string | null>(null);
+  const [hasAisFix, setHasAisFix] = useState(false); // 本次連線是否已收到即時訊號
 
-  const [gameState, setGameState] = useState<GameState>(GameState.Dashboard);
-  
-  // Stats State
-  const [userStats, setUserStats] = useState<UserStats>(() => {
-    try {
-      const savedStats = localStorage.getItem(STORAGE_KEY);
-      if (savedStats) {
-        return JSON.parse(savedStats);
-      }
-    } catch (error) {
-      console.error('Failed to load stats from storage:', error);
-    }
-    return INITIAL_STATS;
-  });
+  const dataSource: DataSource = settings.aisApiKey ? 'ais' : 'demo';
 
-  // Persistence
+  // ---------- 船位資料來源 ----------
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(userStats));
-  }, [userStats]);
+    let ais: AisHandle | null = null;
+    let timer: ReturnType<typeof setInterval> | null = null;
 
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    if (settings.aisApiKey) {
+      // 真實 AIS：即時位置 + localStorage 累積 5 天航跡
+      setHasAisFix(false);
+      setAisDetail(null);
+      setTrack(loadStoredTrack(TRACK_DAYS));
+      setPosition(loadLastPosition()); // 先顯示上次收到的船位，等待新訊號
+      ais = connectAisStream(settings.aisApiKey, settings.mmsi, (pos) => {
+        setHasAisFix(true);
+        setPosition(pos);
+        saveLastPosition(pos);
+        setTrack(appendStoredTrack({ lat: pos.lat, lon: pos.lon, timestamp: pos.timestamp }, TRACK_DAYS));
+      }, (status, detail) => {
+        setAisStatus(status);
+        if (detail) setAisDetail(detail);
+      });
     } else {
-      localStorage.removeItem(USER_STORAGE_KEY);
+      // 模擬航線：每 30 秒推進
+      setAisStatus(null);
+      setAisDetail(null);
+      setHasAisFix(false);
+      const update = () => {
+        const now = Date.now();
+        setPosition(getDemoPosition(now));
+        setTrack(getDemoTrack(now, TRACK_DAYS));
+      };
+      update();
+      timer = setInterval(update, 30_000);
     }
-  }, [user]);
-
-  const [currentQuestions, setCurrentQuestions] = useState<QuizQuestion[]>([]);
-  const [lastResult, setLastResult] = useState<BattleResult | null>(null);
-  const [activeSubject, setActiveSubject] = useState<Subject | null>(null);
-  const [hasLevelledUp, setHasLevelledUp] = useState(false);
-
-  const handleLogin = () => {
-    // Mock user profile from Google
-    const mockUser: UserProfile = {
-      name: 'Exam Warrior',
-      email: 'warrior@example.com',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Felix'
+    return () => {
+      ais?.close();
+      if (timer) clearInterval(timer);
     };
-    setUser(mockUser);
-  };
+  }, [settings.aisApiKey, settings.mmsi]);
 
-  const handleLogout = () => {
-    setUser(null);
-    setGameState(GameState.Dashboard);
-  };
+  // ---------- 船位點氣象（移動超過 ~15km 或 15 分鐘更新） ----------
+  const weatherAnchor = useRef<{ lat: number; lon: number; t: number } | null>(null);
+  useEffect(() => {
+    if (!position) return;
+    const a = weatherAnchor.current;
+    const moved = !a || Math.hypot(position.lat - a.lat, position.lon - a.lon) > 0.15;
+    const stale = !a || Date.now() - a.t > 15 * 60_000;
+    if (!moved && !stale) return;
+    weatherAnchor.current = { lat: position.lat, lon: position.lon, t: Date.now() };
+    fetchShipWeather(position.lat, position.lon).then(setWeather).catch(console.error);
+    fetchShipForecast(position.lat, position.lon).then(setForecast).catch(console.error);
+  }, [position]);
 
-  const handleStartBattle = async (subject: Subject) => {
-    setGameState(GameState.Preparing);
-    setActiveSubject(subject);
-    setHasLevelledUp(false);
-    
-    // Simulate minimum loading time for UX + Fetch
-    const [questions] = await Promise.all([
-      generateQuiz(subject, userStats.level),
-      new Promise(resolve => setTimeout(resolve, 1500)) // Min 1.5s load to show cool animation
-    ]);
-    
-    setCurrentQuestions(questions);
-    setGameState(GameState.Battle);
-  };
+  // ---------- 氣象網格（移動超過 ~1° 或 30 分鐘更新） ----------
+  const gridAnchor = useRef<{ lat: number; lon: number; t: number } | null>(null);
+  useEffect(() => {
+    if (!position) return;
+    const a = gridAnchor.current;
+    const moved = !a || Math.hypot(position.lat - a.lat, position.lon - a.lon) > 1;
+    const stale = !a || Date.now() - a.t > 30 * 60_000;
+    if (!moved && !stale) return;
+    gridAnchor.current = { lat: position.lat, lon: position.lon, t: Date.now() };
+    fetchWeatherGrid(position.lat, position.lon).then(setGrid).catch(console.error);
+  }, [position]);
 
-  const handleBattleComplete = (result: BattleResult) => {
-    setLastResult(result);
-    
-    // Update stats
-    setUserStats(prev => {
-      const newXp = prev.xp + result.xpGained;
-      let newLevel = prev.level;
-      let newXpToNext = prev.xpToNextLevel;
-      let currentXp = newXp;
+  // ---------- 雨量雷達（每 10 分鐘刷新最新一幀） ----------
+  useEffect(() => {
+    const load = () => fetchRainTileUrl().then(setRainTileUrl).catch(() => {});
+    load();
+    const timer = setInterval(load, 10 * 60_000);
+    return () => clearInterval(timer);
+  }, []);
 
-      // Simple level up logic
-      let didLevelUp = false;
-      if (currentXp >= prev.xpToNextLevel) {
-        newLevel += 1;
-        currentXp = currentXp - prev.xpToNextLevel;
-        newXpToNext = Math.floor(prev.xpToNextLevel * 1.2);
-        didLevelUp = true;
-      }
-      setHasLevelledUp(didLevelUp);
+  // ---------- 舒適度 ----------
+  const comfort: ComfortResult | null = useMemo(() => {
+    if (!weather) return null;
+    return computeComfort(weather.waveHeight, weather.wavePeriod, weather.windSpeed);
+  }, [weather]);
 
-      // Update mastery & Calculate Score
-      let newMastery = { ...prev.mastery };
-      const correctCount = result.userAnswers.filter((ans, i) => ans === result.questions[i].correctIndex).length;
-      
-      if (activeSubject) {
-        const percentage = correctCount / result.questions.length;
-        // Increase mastery if performance was good
-        if (percentage >= 0.5) {
-           // Gain between 2-5 points based on accuracy
-           const gain = Math.floor(percentage * 5) + 1;
-           newMastery[activeSubject] = Math.min(100, newMastery[activeSubject] + gain);
-        }
-      }
-
-      // Create Record
-      const newRecord: BattleRecord = {
-        id: `battle-${Date.now()}`,
-        date: new Date().toISOString(),
-        subject: activeSubject || Subject.Chinese, // Fallback
-        score: correctCount,
-        totalQuestions: result.questions.length,
-        xpGained: result.xpGained
-      };
-      
-      return {
-        ...prev,
-        level: newLevel,
-        xp: currentXp,
-        xpToNextLevel: newXpToNext,
-        battlesWon: prev.battlesWon + 1,
-        mastery: newMastery,
-        history: [...prev.history, newRecord]
-      };
+  const toggleLayer = useCallback((key: MapLayerKey) => {
+    setActiveLayers(prev => {
+      const next = new Set(prev);
+      next.has(key) ? next.delete(key) : next.add(key);
+      return next;
     });
+  }, []);
 
-    setGameState(GameState.Result);
-  };
-
-  const handleReturnHome = () => {
-    setGameState(GameState.Dashboard);
-    setLastResult(null);
-    setCurrentQuestions([]);
-    setActiveSubject(null);
-    setHasLevelledUp(false);
-  };
-
-  // If not logged in, show Login screen
-  if (!user) {
-    return <Login onLogin={handleLogin} />;
-  }
+  const saveSettings = useCallback((aisApiKey: string, mmsi: string) => {
+    const next = { aisApiKey, mmsi: mmsi || SHIP_INFO.defaultMmsi };
+    setSettings(next);
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(next));
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gaming-bg text-slate-200 font-sans">
-      <Navbar stats={userStats} user={user} onLogout={handleLogout} />
-      
-      <main className="relative">
-        {gameState === GameState.Dashboard && (
-          <Dashboard stats={userStats} onStartBattle={handleStartBattle} />
-        )}
+    <div className="h-screen w-screen flex flex-col md:flex-row bg-slate-950 overflow-hidden">
+      {/* 地圖區 */}
+      <div className="relative flex-1 min-h-0">
+        <ShipMap
+          position={position}
+          track={track}
+          grid={grid}
+          rainTileUrl={rainTileUrl}
+          activeLayers={activeLayers}
+          followShip={followShip}
+        />
+        <LayerControl
+          activeLayers={activeLayers}
+          onToggle={toggleLayer}
+          followShip={followShip}
+          onToggleFollow={() => setFollowShip(f => !f)}
+          onOpenSettings={() => setSettingsOpen(true)}
+        />
+        {activeLayers.has('wave') && <WaveLegend />}
 
-        {gameState === GameState.Preparing && (
-          <div className="h-[80vh] flex flex-col items-center justify-center text-center">
-            <div className="relative w-24 h-24 mb-8">
-               <div className="absolute inset-0 border-4 border-gaming-primary/30 rounded-full animate-ping"></div>
-               <div className="absolute inset-0 border-4 border-t-gaming-primary border-r-gaming-secondary border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-            </div>
-            <h2 className="text-2xl font-bold font-display text-white mb-2">GENERATING BATTLE...</h2>
-            <p className="text-slate-400">Searching the archives for {activeSubject} challenges</p>
+        {/* AIS 連線狀態橫幅 */}
+        {dataSource === 'ais' && !hasAisFix && (
+          <div className={`absolute top-3 left-1/2 -translate-x-1/2 z-[600] glass-panel rounded-xl px-4 py-2 text-xs max-w-[85%] text-center ${
+            aisStatus === 'error' ? 'text-red-300' : 'text-cyan-200'
+          }`}>
+            {aisStatus === 'error' ? (
+              <>⚠️ AIS 連線異常{aisDetail ? `：${aisDetail}` : ''}，15 秒後自動重試（請確認 API Key 是否正確）</>
+            ) : aisStatus === 'connected' ? (
+              <>🛰️ 已連上 aisstream.io，等待 Costa Serena（MMSI {settings.mmsi}）的下一筆訊號…
+                {position ? ' 目前顯示為最後回報位置' : ' 航行中通常數秒～數分鐘，靠港時可能較久'}</>
+            ) : (
+              <>📡 正在連線 aisstream.io…</>
+            )}
           </div>
         )}
+      </div>
 
-        {gameState === GameState.Battle && (
-          <QuizBattle questions={currentQuestions} onComplete={handleBattleComplete} />
-        )}
+      {/* 資訊面板：桌機右側、手機下方 */}
+      <aside className="w-full md:w-[400px] md:h-full h-[46vh] shrink-0 bg-slate-900/95 border-t md:border-t-0 md:border-l border-slate-700/50">
+        <InfoPanel
+          position={position}
+          weather={weather}
+          comfort={comfort}
+          forecast={forecast}
+          dataSource={dataSource}
+          aisStatus={aisStatus}
+        />
+      </aside>
 
-        {gameState === GameState.Result && lastResult && (
-          <ResultModal result={lastResult} levelUp={hasLevelledUp} onHome={handleReturnHome} />
-        )}
-      </main>
+      <SettingsModal
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        apiKey={settings.aisApiKey}
+        mmsi={settings.mmsi}
+        onSave={saveSettings}
+      />
     </div>
   );
 };

@@ -1,55 +1,73 @@
-
-export enum Subject {
-  Chinese = '國文',
-  English = '英文',
-  Math = '數學',
-  Science = '自然',
-  Social = '社會',
+// 船舶位置點
+export interface ShipPosition {
+  lat: number;
+  lon: number;
+  timestamp: number;      // ms epoch
+  speedKn: number;        // 航速（節）
+  headingDeg: number;     // 航向（度，0=北）
+  status: 'sailing' | 'inPort';
+  portName?: string;      // 停靠港名稱（若在港）
 }
 
-export interface QuizQuestion {
-  id: string;
-  text: string;
-  options: string[];
-  correctIndex: number;
-  explanation: string;
-  topic: string;
+export interface TrackPoint {
+  lat: number;
+  lon: number;
+  timestamp: number;
 }
 
-export interface BattleRecord {
-  id: string;
-  date: string;
-  subject: Subject;
-  score: number;
-  totalQuestions: number;
-  xpGained: number;
+// 船隻所在點的即時海氣象
+export interface MarineWeather {
+  waveHeight: number;     // 有義波高 (m)
+  waveDirection: number;  // 波向 (度)
+  wavePeriod: number;     // 波週期 (s)
+  windSpeed: number;      // 風速 (km/h)
+  windDirection: number;  // 風向 (度)
+  precipitation: number;  // 時雨量 (mm)
+  fetchedAt: number;
 }
 
-export interface UserProfile {
-  name: string;
-  email: string;
-  avatar: string;
+// 每小時預報（供圖表與舒適度預測）
+export interface HourlyForecast {
+  time: number;           // ms epoch
+  waveHeight: number;
+  wavePeriod: number;
+  windSpeed: number;
+  precipitation: number;
+  comfort: number;        // 0-100
 }
 
-export interface UserStats {
-  level: number;
-  xp: number;
-  xpToNextLevel: number;
-  streak: number;
-  battlesWon: number;
-  mastery: Record<Subject, number>; // 0 to 100
-  history: BattleRecord[];
+// 氣象網格點（供地圖圖層渲染）
+export interface WeatherGridPoint {
+  lat: number;
+  lon: number;
+  waveHeight: number | null;  // 陸地點為 null
+  windSpeed: number;          // km/h
+  windDirection: number;      // 來向（度）
+  precipitation: number;      // mm/h
 }
 
-export enum GameState {
-  Dashboard,
-  Preparing,
-  Battle,
-  Result,
+export interface WeatherGrid {
+  points: WeatherGridPoint[];
+  rows: number;
+  cols: number;
+  latMin: number;
+  latMax: number;
+  lonMin: number;
+  lonMax: number;
+  fetchedAt: number;
 }
 
-export interface BattleResult {
-  questions: QuizQuestion[];
-  userAnswers: number[]; // Array of selected indices
-  xpGained: number;
+// 舒適度指數
+export interface ComfortResult {
+  index: number;          // 0-100，越高越舒適
+  level: string;          // 等級名稱
+  emoji: string;
+  color: string;          // 對應顯示色
+  motionDesc: string;     // 體感描述
+  advice: string;         // 建議
+  estRollDeg: number;     // 估計橫搖角（度）
 }
+
+export type MapLayerKey = 'wave' | 'wind' | 'rain';
+
+export type DataSource = 'demo' | 'ais';

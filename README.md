@@ -1,20 +1,49 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Costa Serena 郵輪追蹤觀測站 🛳️
 
-# Run and deploy your AI Studio app
+追蹤歌詩達莎倫娜號（Costa Serena, IMO 9343132）的海上監視觀測器。
 
-This contains everything you need to run your app locally.
+## 功能
 
-View your app in AI Studio: https://ai.studio/apps/drive/1a3T_OGvTeBwuOSjDsgkmqbDhFBDJIMJ9
+1. **最新船位**：地圖上以小船圖示顯示目前位置（依航向旋轉、航行中有雷達波動畫），並顯示航速、航向、停靠港。
+2. **5 天航跡**：保留最近 5 天的航行路徑，越接近現在的航段顏色越亮。
+3. **Windy 風格氣象圖層**（可個別開關）：
+   - 🌊 **波浪**：有義波高熱區著色 + 數值標示（Open-Meteo Marine API）
+   - 💨 **風力**：動態風場粒子流動動畫，顏色隨風速變化
+   - 🌧️ **雨量**：即時雷達回波（RainViewer）
+4. **航行舒適度指數（0–100）**：把波浪換算成船隻搖晃程度。
+   模型考量 Costa Serena 的船長（290 m）、自然橫搖週期（約 17 s）與減搖鰭：
+   - 短週期碎浪（T < 7s）船體幾乎無感
+   - 波長接近船長（T ≈ 13–14s）進入縱搖共振區
+   - 週期接近自然橫搖週期（≈ 17s）進入橫搖共振區
+   - 「有效波高 = 波高 × 週期因子 + 強風加成」，再映射為 0–100 舒適度，
+     並附體感描述、暈船建議與估計橫搖角。另提供未來 48 小時舒適度預測圖。
 
-## Run Locally
+## 資料來源
 
-**Prerequisites:**  Node.js
+| 資料 | 來源 | 需要金鑰 |
+|---|---|---|
+| 船位（預設） | 內建模擬航線（基隆—石垣—宮古—那霸 5 天航次型態） | 否 |
+| 船位（即時 AIS） | [aisstream.io](https://aisstream.io) WebSocket | 免費註冊，於畫面「設定」填入 |
+| 波浪 / 風 / 雨 | [Open-Meteo](https://open-meteo.com)（Marine + Forecast API） | 否 |
+| 雷達回波 | [RainViewer](https://www.rainviewer.com) | 否 |
 
+填入 aisstream.io API Key 後即切換為真實船位，航跡會存於瀏覽器 localStorage 逐步累積（保留 5 天）。
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+金鑰有兩種設定方式（擇一）：
+
+1. 畫面左上角「⚙️ 設定」貼上（存在瀏覽器 localStorage）
+2. 專案根目錄建立 `.env.local`（已被 .gitignore 排除，不會進版本庫）：
+
+   ```
+   VITE_AIS_API_KEY=你的金鑰
+   ```
+
+## 本機執行
+
+```bash
+npm install
+npm run dev   # http://localhost:3000
+npm run build # 產出 dist/
+```
+
+> 舒適度指數為模型估算，僅供行程參考，實際狀況以船方公告為準。
