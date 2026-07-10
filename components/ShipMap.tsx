@@ -293,8 +293,16 @@ export const ShipMap: React.FC<ShipMapProps> = ({
     }).addTo(map);
     mapRef.current = map;
     return () => {
+      // 地圖銷毀時必須一併重設所有圖層引用，
+      // 否則重新掛載（如 React StrictMode）後會操作到已銷毀地圖上的物件
       waveRef.current?.remove();
       windRef.current?.remove();
+      waveRef.current = null;
+      windRef.current = null;
+      markerRef.current = null;
+      trackRef.current = null;
+      rainRef.current = null;
+      didFitRef.current = false;
       map.remove();
       mapRef.current = null;
     };

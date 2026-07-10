@@ -8,7 +8,7 @@ import {
 } from './types';
 import {
   SHIP_INFO, connectAisStream, getDemoPosition, getDemoTrack,
-  appendStoredTrack, loadStoredTrack, AisHandle,
+  appendStoredTrack, loadStoredTrack, loadLastPosition, saveLastPosition, AisHandle,
 } from './services/shipService';
 import {
   fetchRainTileUrl, fetchShipForecast, fetchShipWeather, fetchWeatherGrid,
@@ -32,10 +32,9 @@ function loadSettings(): Settings {
     const raw = localStorage.getItem(SETTINGS_KEY);
     if (raw) {
       const saved = JSON.parse(raw);
-      return {
-        aisApiKey: saved.aisApiKey || ENV_AIS_KEY,
-        mmsi: saved.mmsi || SHIP_INFO.defaultMmsi,
-      };
+      // 遷移：舊版曾預設錯誤的 MMSI，自動更正為正確船號
+      const mmsi = !saved.mmsi || saved.mmsi === '247281000' ? SHIP_INFO.defaultMmsi : saved.mmsi;
+      return { aisApiKey: saved.aisApiKey || ENV_AIS_KEY, mmsi };
     }
   } catch { /* ignore */ }
   return { aisApiKey: ENV_AIS_KEY, mmsi: SHIP_INFO.defaultMmsi };
@@ -53,6 +52,8 @@ const App: React.FC = () => {
   const [followShip, setFollowShip] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [aisStatus, setAisStatus] = useState<string | null>(null);
+  const [aisDetail, setAisDetail] = useState<string | null>(null);
+  const [hasAisFix, setHasAisFix] = useState(false); // 本次連線是否已收到即時訊號
 
   const dataSource: DataSource = settings.aisApiKey ? 'ais' : 'demo';
 
@@ -63,13 +64,24 @@ const App: React.FC = () => {
 
     if (settings.aisApiKey) {
       // 真實 AIS：即時位置 + localStorage 累積 5 天航跡
+      setHasAisFix(false);
+      setAisDetail(null);
       setTrack(loadStoredTrack(TRACK_DAYS));
+      setPosition(loadLastPosition()); // 先顯示上次收到的船位，等待新訊號
       ais = connectAisStream(settings.aisApiKey, settings.mmsi, (pos) => {
+        setHasAisFix(true);
         setPosition(pos);
+        saveLastPosition(pos);
         setTrack(appendStoredTrack({ lat: pos.lat, lon: pos.lon, timestamp: pos.timestamp }, TRACK_DAYS));
-      }, setAisStatus);
+      }, (status, detail) => {
+        setAisStatus(status);
+        if (detail) setAisDetail(detail);
+      });
     } else {
       // 模擬航線：每 30 秒推進
+      setAisStatus(null);
+      setAisDetail(null);
+      setHasAisFix(false);
       const update = () => {
         const now = Date.now();
         setPosition(getDemoPosition(now));
@@ -157,6 +169,22 @@ const App: React.FC = () => {
           onOpenSettings={() => setSettingsOpen(true)}
         />
         {activeLayers.has('wave') && <WaveLegend />}
+
+        {/* AIS 連線狀態橫幅 */}
+        {dataSource === 'ais' && !hasAisFix && (
+          <div className={`absolute top-3 left-1/2 -translate-x-1/2 z-[600] glass-panel rounded-xl px-4 py-2 text-xs max-w-[85%] text-center ${
+            aisStatus === 'error' ? 'text-red-300' : 'text-cyan-200'
+          }`}>
+            {aisStatus === 'error' ? (
+              <>⚠️ AIS 連線異常{aisDetail ? `：${aisDetail}` : ''}，15 秒後自動重試（請確認 API Key 是否正確）</>
+            ) : aisStatus === 'connected' ? (
+              <>🛰️ 已連上 aisstream.io，等待 Costa Serena（MMSI {settings.mmsi}）的下一筆訊號…
+                {position ? ' 目前顯示為最後回報位置' : ' 航行中通常數秒～數分鐘，靠港時可能較久'}</>
+            ) : (
+              <>📡 正在連線 aisstream.io…</>
+            )}
+          </div>
+        )}
       </div>
 
       {/* 資訊面板：桌機右側、手機下方 */}

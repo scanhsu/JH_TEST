@@ -4,7 +4,7 @@ import { ShipPosition, TrackPoint } from '../types';
 export const SHIP_INFO = {
   name: 'Costa Serena（歌詩達莎倫娜號）',
   imo: '9343132',
-  defaultMmsi: '247281000', // 可於設定中修改
+  defaultMmsi: '247187600', // MarineTraffic / VesselFinder 登錄之 MMSI，可於設定中修改
   flag: '義大利',
   grossTonnage: 114261,
   lengthM: 290,
@@ -126,6 +126,23 @@ export function getDemoTrack(nowMs: number, days = 5): TrackPoint[] {
 // ---------- AIS 即時資料（aisstream.io，選用） ----------
 
 const TRACK_STORAGE_KEY = 'costa_serena_ais_track_v1';
+const LAST_POS_STORAGE_KEY = 'costa_serena_last_pos_v1';
+
+/** 儲存最後一筆 AIS 船位，重新整理後可立即顯示（標示回報時間） */
+export function saveLastPosition(pos: ShipPosition): void {
+  try {
+    localStorage.setItem(LAST_POS_STORAGE_KEY, JSON.stringify(pos));
+  } catch { /* ignore */ }
+}
+
+export function loadLastPosition(): ShipPosition | null {
+  try {
+    const raw = localStorage.getItem(LAST_POS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) as ShipPosition : null;
+  } catch {
+    return null;
+  }
+}
 
 export function loadStoredTrack(days = 5): TrackPoint[] {
   try {
@@ -159,11 +176,13 @@ export interface AisHandle {
  * 連線 aisstream.io 接收 Costa Serena 即時 AIS 位置。
  * 需要免費 API Key（https://aisstream.io 註冊取得）。
  */
+export type AisStatus = 'connecting' | 'connected' | 'error' | 'closed';
+
 export function connectAisStream(
   apiKey: string,
   mmsi: string,
   onPosition: (pos: ShipPosition) => void,
-  onStatus: (status: 'connecting' | 'connected' | 'error' | 'closed') => void,
+  onStatus: (status: AisStatus, detail?: string) => void,
 ): AisHandle {
   let closed = false;
   let ws: WebSocket | null = null;
@@ -185,6 +204,11 @@ export function connectAisStream(
     ws.onmessage = (ev) => {
       try {
         const msg = JSON.parse(ev.data as string);
+        if (msg?.error) {
+          // aisstream 的錯誤訊息（金鑰錯誤、訂閱格式錯誤等）
+          onStatus('error', String(msg.error));
+          return;
+        }
         const r = msg?.Message?.PositionReport;
         if (!r) return;
         onPosition({
@@ -197,9 +221,9 @@ export function connectAisStream(
         });
       } catch { /* 忽略格式錯誤的訊息 */ }
     };
-    ws.onerror = () => onStatus('error');
+    ws.onerror = () => { if (!closed) onStatus('error'); };
     ws.onclose = () => {
-      if (closed) { onStatus('closed'); return; }
+      if (closed) return; // 主動關閉（如元件卸載）不得再回報狀態
       onStatus('error');
       retryTimer = setTimeout(connect, 15_000); // 斷線自動重連
     };
