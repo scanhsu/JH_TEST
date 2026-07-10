@@ -1,5 +1,5 @@
 {
-  "name": "CAP Level Up (會考大師)",
-  "description": "A gamified CAP (會考) preparation app designed for efficiency. Short battles, instant feedback, and RPG-style progression tracking.",
+  "name": "Costa Serena 郵輪追蹤觀測站",
+  "description": "追蹤歌詩達莎倫娜號（Costa Serena）的即時位置與 5 天航跡，疊加波浪、風力、雨量氣象圖層，並將波浪換算為船隻搖晃舒適度指數。",
   "requestFramePermissions": []
 }
