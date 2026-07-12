@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>熱帶氣旋生成的科學 — 以 2026 年颱風巴威為例 🌀</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #f6f8fb;
+    --card: #ffffff;
+    --ink: #1a2332;
+    --muted: #5a6a7e;
+    --primary: #29418f;
+    --primary-light: #e8edf9;
+    --accent: #0e7c86;
+    --warn: #b3541e;
+    --line: #dde4ee;
+    --good: #2e7d32;
+    --bad: #b71c1c;
+  }
+
+  body {
+    font-family: "Noto Sans TC", "Microsoft JhengHei", "PingFang TC", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.85;
+  }
+
+  .wrap { max-width: 940px; margin: 0 auto; padding: 16px; }
+
+  /* ---------- Header ---------- */
+  header {
+    background: linear-gradient(135deg, #14213d 0%, #29418f 65%, #3a5bbf 100%);
+    color: #fff;
+    padding: 52px 20px 40px;
+    text-align: center;
+  }
+  header .kicker { font-size: 14px; letter-spacing: 3px; opacity: .8; }
+  header h1 { font-size: clamp(26px, 4.6vw, 40px); margin: 10px 0 12px; }
+  header p { max-width: 640px; margin: 0 auto; opacity: .92; font-size: clamp(14px, 2.6vw, 16.5px); }
+  .header-tags { margin-top: 18px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+  .htag { border: 1px solid rgba(255,255,255,.45); border-radius: 999px; padding: 4px 14px; font-size: 13px; }
+
+  /* ---------- Sections ---------- */
+  section { margin: 44px 0; }
+  h2 { font-size: clamp(21px, 3.6vw, 27px); color: var(--primary); margin-bottom: 4px; }
+  h2 .no { color: var(--accent); font-family: Georgia, serif; margin-right: 8px; }
+  .lead { color: var(--muted); margin-bottom: 18px; font-size: 15.5px; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    padding: 22px; box-shadow: 0 2px 10px rgba(26,35,50,.05);
+  }
+
+  /* ---------- Condition grid ---------- */
+  .cond-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; }
+  .cond {
+    background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--accent);
+    border-radius: 12px; padding: 16px 18px;
+  }
+  .cond h3 { font-size: 16px; margin-bottom: 6px; }
+  .cond h3 .tag {
+    font-size: 12px; background: var(--primary-light); color: var(--primary);
+    border-radius: 6px; padding: 2px 8px; margin-left: 6px; vertical-align: middle; font-weight: 600;
+  }
+  .cond p { font-size: 14px; color: #3d4b5f; }
+  .cond .formula {
+    font-family: Georgia, "Times New Roman", serif; font-style: italic;
+    background: #f2f5fb; border-radius: 8px; padding: 6px 12px; margin-top: 8px;
+    font-size: 14.5px; display: inline-block;
+  }
+
+  /* ---------- Structure diagram ---------- */
+  .figure { background: #0b1e3a; border-radius: 12px; overflow: hidden; }
+  .figure svg { display: block; width: 100%; height: auto; }
+  .figcap { font-size: 13px; color: var(--muted); margin-top: 10px; text-align: center; }
+
+  .mech-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+  @media (max-width: 720px) { .mech-cols { grid-template-columns: 1fr; } }
+  .mech { background: #f8fafd; border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .mech h3 { font-size: 16px; color: var(--primary); margin-bottom: 6px; }
+  .mech p { font-size: 14.5px; color: #3d4b5f; }
+
+  /* ---------- Simulator ---------- */
+  .sim-box { display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; }
+  @media (max-width: 760px) { .sim-box { grid-template-columns: 1fr; } }
+  .sim-canvas-box { background: #05264d; border-radius: 12px; overflow: hidden; align-self: start; }
+  canvas { display: block; width: 100%; height: auto; }
+  .slider-row { margin-bottom: 14px; }
+  .slider-row label { display: flex; justify-content: space-between; font-size: 14.5px; font-weight: 700; }
+  .slider-row label output { color: var(--accent); font-family: Georgia, serif; }
+  input[type=range] { width: 100%; accent-color: var(--primary); cursor: pointer; }
+  .slider-row .note { font-size: 12.5px; color: var(--muted); }
+  .sim-result {
+    border-radius: 12px; padding: 14px 16px; margin-top: 6px; font-size: 15px;
+    border: 1px solid var(--line); background: #f8fafd;
+  }
+  .sim-result .cat { font-size: 20px; font-weight: 800; display: block; margin-bottom: 4px; }
+  .sim-result.none .cat { color: #607d8b; }
+  .sim-result.td .cat { color: #0277bd; }
+  .sim-result.mild .cat { color: #2e7d32; }
+  .sim-result.mid .cat { color: #ef6c00; }
+  .sim-result.severe .cat { color: #b71c1c; }
+  .sim-metrics { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+  .metric {
+    background: var(--primary-light); border-radius: 8px; padding: 6px 12px; font-size: 13px;
+    color: var(--primary); font-family: Georgia, serif;
+  }
+
+  /* ---------- Table ---------- */
+  .table-scroll { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 560px; }
+  th, td { border: 1px solid var(--line); padding: 9px 12px; text-align: left; }
+  th { background: var(--primary-light); color: var(--primary); }
+  tr.hl { background: #fff3e6; font-weight: 700; }
+  .tnote { font-size: 13px; color: var(--muted); margin-top: 8px; }
+
+  /* ---------- Taiwan effects ---------- */
+  .tw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+  .tw {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px;
+    border-top: 4px solid var(--warn);
+  }
+  .tw h3 { font-size: 16px; margin-bottom: 6px; }
+  .tw p { font-size: 14px; color: #3d4b5f; }
+
+  /* ---------- Case study ---------- */
+  .case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 760px) { .case-grid { grid-template-columns: 1fr; } }
+  .timeline { list-style: none; }
+  .timeline li { position: relative; padding: 0 0 16px 26px; font-size: 14.5px; }
+  .timeline li::before {
+    content: ""; position: absolute; left: 7px; top: 9px; bottom: -2px; width: 2px; background: #b9c6de;
+  }
+  .timeline li:last-child::before { display: none; }
+  .timeline li::after {
+    content: ""; position: absolute; left: 2px; top: 7px; width: 12px; height: 12px;
+    border-radius: 50%; background: var(--primary); border: 2px solid #fff; box-shadow: 0 0 0 2px var(--primary);
+  }
+  .timeline b { color: var(--primary); }
+
+  .impact-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 720px) { .impact-cols { grid-template-columns: 1fr; } }
+  .impact { border-radius: 12px; padding: 18px; border: 1px solid var(--line); }
+  .impact.risk { background: #fdf3f2; }
+  .impact.gift { background: #f1f8f2; }
+  .impact h3 { font-size: 16.5px; margin-bottom: 8px; }
+  .impact li { margin-left: 20px; font-size: 14.5px; padding: 3px 0; }
+
+  /* ---------- Quiz ---------- */
+  .quiz-q { margin-bottom: 22px; }
+  .quiz-q h3 { font-size: 16px; margin-bottom: 8px; }
+  .quiz-opts { display: grid; gap: 8px; }
+  .quiz-opt {
+    background: #f6f8fb; border: 1.5px solid var(--line); border-radius: 10px;
+    padding: 10px 14px; font-size: 14.5px; cursor: pointer; text-align: left;
+    font-family: inherit; transition: all .15s; width: 100%;
+  }
+  .quiz-opt:hover:not(:disabled) { border-color: var(--primary); background: var(--primary-light); }
+  .quiz-opt.right { background: #e4f2e5; border-color: var(--good); font-weight: 700; }
+  .quiz-opt.wrong { background: #fbe4e2; border-color: var(--bad); }
+  .quiz-feedback { font-size: 13.5px; margin-top: 8px; min-height: 20px; }
+  .quiz-score {
+    text-align: center; font-size: 18px; font-weight: 800; color: var(--primary);
+    background: var(--primary-light); border-radius: 12px; padding: 14px; margin-top: 8px;
+  }
+
+  footer { text-align: center; padding: 30px 16px 44px; color: var(--muted); font-size: 13px; }
+  footer a { color: var(--primary); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="kicker">大氣科學 × 防災教育</div>
+  <h1>熱帶氣旋生成的科學 🌀</h1>
+  <p>颱風是地球上效率最驚人的「天然熱機」——把海洋的熱能轉換成每秒數十公尺的狂風。
+  本頁以 2026 年 7 月侵襲台灣的第 9 號颱風「巴威」（BAVI）為個案，
+  從生成條件、物理機制到台灣的地形效應，帶你完整理解一個颱風的一生。</p>
+  <div class="header-tags">
+    <span class="htag">生成六條件</span><span class="htag">科氏力</span><span class="htag">潛熱與熱機理論</span>
+    <span class="htag">互動模擬器</span><span class="htag">台灣地形效應</span><span class="htag">巴威個案分析</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ===== 1. 生成條件 ===== -->
+  <section>
+    <h2><span class="no">01</span>熱帶氣旋生成的六個必要條件</h2>
+    <p class="lead">氣象學家歸納出熱帶氣旋生成（tropical cyclogenesis）的六個環境條件——缺一不可，這也解釋了為什麼颱風只在特定海域、特定季節出現。</p>
+    <div class="cond-grid">
+      <div class="cond">
+        <h3>① 溫暖的海水 <span class="tag">能量來源</span></h3>
+        <p>海表面溫度（SST）須達 <b>26.5°C 以上</b>，且暖水層要延伸到約 <b>50 公尺深</b>——否則颱風自己攪起的冷水就會切斷能量供應。台灣東南方的菲律賓海夏季 SST 常達 29–30°C，是西北太平洋的「颱風工廠」。</p>
+      </div>
+      <div class="cond">
+        <h3>② 足夠的科氏力 <span class="tag">旋轉來源</span></h3>
+        <p>地球自轉產生的科氏力使氣流偏轉、得以旋轉聚合。科氏參數在赤道為零，因此颱風幾乎不會在<b>南北緯 5° 以內</b>生成。</p>
+        <span class="formula">f = 2Ω sin φ（Ω：地球自轉角速度，φ：緯度）</span>
+      </div>
+      <div class="cond">
+        <h3>③ 微弱的垂直風切 <span class="tag">結構保護</span></h3>
+        <p>高低層風速風向差異（垂直風切）若太大（約 &gt;10 m/s），會把發展中的對流塔「攔腰吹斜」，暖心結構無法建立。這是許多擾動胎死腹中的主因。</p>
+      </div>
+      <div class="cond">
+        <h3>④ 對流不穩定的大氣 <span class="tag">上升動力</span></h3>
+        <p>氣塊要能一路浮升到對流層頂（條件性不穩定、高 CAPE），深對流才能發展成高聳的積雨雲塔。</p>
+      </div>
+      <div class="cond">
+        <h3>⑤ 中層大氣夠潮濕 <span class="tag">防止蒸發冷卻</span></h3>
+        <p>對流層中層（約 5 公里高）若太乾燥，雨滴蒸發造成的下沉冷空氣會壓制對流，乾空氣入侵也常使颱風減弱。</p>
+      </div>
+      <div class="cond">
+        <h3>⑥ 既有的低層擾動 <span class="tag">初始種子</span></h3>
+        <p>颱風不會憑空出現，需要一個「種子」：季風槽、間熱帶輻合帶（ITCZ）中的雲簇，或自非洲、太平洋傳來的東風波。巴威的前身就是 6 月底出現在西太平洋的熱帶擾動。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 2. 結構與物理機制 ===== -->
+  <section>
+    <h2><span class="no">02</span>颱風的結構與運轉機制</h2>
+    <p class="lead">成熟颱風是一部組織精密的機器：低層氣流旋入、眼牆劇烈上升、高層向外流出，中心則是下沉無風的颱風眼。</p>
+    <div class="card">
+      <div class="figure">
+        <svg viewBox="0 0 900 430" role="img" aria-label="颱風垂直剖面結構圖">
+          <defs>
+            <linearGradient id="skyg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#0b1e3a"/><stop offset="1" stop-color="#1b3a63"/>
+            </linearGradient>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 Z" fill="#ffd54f"/>
+            </marker>
+            <marker id="arrowB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0 0 L10 5 L0 10 Z" fill="#80deea"/>
+            </marker>
+          </defs>
+          <rect width="900" height="430" fill="url(#skyg)"/>
+          <!-- tropopause -->
+          <line x1="0" y1="60" x2="900" y2="60" stroke="#90a4ae" stroke-width="1.5" stroke-dasharray="8 6"/>
+          <text x="12" y="50" fill="#b0bec5" font-size="14">對流層頂（高度約 12–16 km）</text>
+          <!-- sea -->
+          <rect y="370" width="900" height="60" fill="#04355e"/>
+          <path d="M0 372 Q 30 366 60 372 T 120 372 T 180 372 T 240 372 T 300 372 T 360 372 T 420 372 T 480 372 T 540 372 T 600 372 T 660 372 T 720 372 T 780 372 T 840 372 T 900 372" fill="none" stroke="#4fc3f7" stroke-width="2.5"/>
+          <text x="12" y="404" fill="#81d4fa" font-size="14">溫暖海面（SST ≥ 26.5°C）持續供應水氣與潛熱</text>
+          <!-- eyewall clouds: left -->
+          <g fill="#e3eaf4">
+            <ellipse cx="355" cy="330" rx="52" ry="42"/><ellipse cx="345" cy="255" rx="58" ry="48"/>
+            <ellipse cx="330" cy="175" rx="66" ry="52"/><ellipse cx="310" cy="105" rx="76" ry="48"/>
+          </g>
+          <!-- eyewall clouds: right -->
+          <g fill="#e3eaf4">
+            <ellipse cx="545" cy="330" rx="52" ry="42"/><ellipse cx="555" cy="255" rx="58" ry="48"/>
+            <ellipse cx="570" cy="175" rx="66" ry="52"/><ellipse cx="590" cy="105" rx="76" ry="48"/>
+          </g>
+          <!-- rainbands -->
+          <g fill="#b6c6dd">
+            <ellipse cx="130" cy="330" rx="46" ry="34"/><ellipse cx="105" cy="285" rx="40" ry="28"/>
+            <ellipse cx="770" cy="330" rx="46" ry="34"/><ellipse cx="795" cy="285" rx="40" ry="28"/>
+          </g>
+          <g stroke="#6fb6e8" stroke-width="2">
+            <line x1="115" y1="352" x2="108" y2="368"/><line x1="135" y1="352" x2="128" y2="368"/><line x1="155" y1="352" x2="148" y2="368"/>
+            <line x1="755" y1="352" x2="748" y2="368"/><line x1="775" y1="352" x2="768" y2="368"/><line x1="795" y1="352" x2="788" y2="368"/>
+          </g>
+          <!-- heavy rain under eyewall -->
+          <g stroke="#90caf9" stroke-width="2.5">
+            <line x1="330" y1="356" x2="322" y2="370"/><line x1="352" y1="356" x2="344" y2="370"/><line x1="374" y1="356" x2="366" y2="370"/>
+            <line x1="528" y1="356" x2="520" y2="370"/><line x1="550" y1="356" x2="542" y2="370"/><line x1="572" y1="356" x2="564" y2="370"/>
+          </g>
+          <!-- inflow arrows -->
+          <path d="M40 350 H 260" stroke="#ffd54f" stroke-width="4" marker-end="url(#arrow)" fill="none"/>
+          <path d="M860 350 H 640" stroke="#ffd54f" stroke-width="4" marker-end="url(#arrow)" fill="none"/>
+          <text x="70" y="338" fill="#ffd54f" font-size="14">低層暖濕氣流旋入（輻合）</text>
+          <!-- updraft in eyewall -->
+          <path d="M355 340 C 350 260, 340 180, 320 95" stroke="#ffd54f" stroke-width="4" marker-end="url(#arrow)" fill="none"/>
+          <path d="M545 340 C 550 260, 560 180, 580 95" stroke="#ffd54f" stroke-width="4" marker-end="url(#arrow)" fill="none"/>
+          <!-- outflow -->
+          <path d="M300 78 C 220 60, 140 55, 50 62" stroke="#80deea" stroke-width="4" marker-end="url(#arrowB)" fill="none"/>
+          <path d="M600 78 C 680 60, 760 55, 850 62" stroke="#80deea" stroke-width="4" marker-end="url(#arrowB)" fill="none"/>
+          <text x="640" y="42" fill="#80deea" font-size="14">高層輻散外流（排氣孔）</text>
+          <!-- eye subsidence -->
+          <path d="M450 110 V 320" stroke="#ef9a9a" stroke-width="3.5" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+          <text x="418" y="95" fill="#ef9a9a" font-size="15" font-weight="bold">颱風眼</text>
+          <text x="392" y="215" fill="#ef9a9a" font-size="13" transform="rotate(90 392 215)"></text>
+          <text x="462" y="200" fill="#ef9a9a" font-size="13">下沉增溫</text>
+          <text x="462" y="220" fill="#ef9a9a" font-size="13">晴朗微風</text>
+          <!-- labels -->
+          <text x="285" y="150" fill="#14213d" font-size="15" font-weight="bold">眼牆</text>
+          <text x="560" y="150" fill="#14213d" font-size="15" font-weight="bold">眼牆</text>
+          <text x="90" y="250" fill="#cfd8e6" font-size="14">螺旋雨帶</text>
+          <text x="745" y="250" fill="#cfd8e6" font-size="14">螺旋雨帶</text>
+        </svg>
+      </div>
+      <p class="figcap">圖：成熟颱風的垂直剖面。眼牆是全颱風風雨最劇烈之處；颱風眼內反而下沉增溫、風平浪靜。</p>
+
+      <div class="mech-cols">
+        <div class="mech">
+          <h3>🔥 潛熱釋放：颱風的引擎</h3>
+          <p>海水蒸發時吸收<b>潛熱</b>（每公斤水約 2.26×10⁶ J）；水氣在眼牆上升凝結時把這些熱釋放回大氣，使氣柱增溫膨脹、地面氣壓下降，抽入更多暖濕空氣——形成<b>正回饋</b>（WISHE 機制：風越強 → 蒸發越旺 → 潛熱越多 → 風更強）。一個成熟颱風每天釋放的能量約 <b>5×10¹⁹ J</b>，相當於全球發電量的數十倍。</p>
+        </div>
+        <div class="mech">
+          <h3>⚙️ 卡諾熱機模型</h3>
+          <p>Emanuel（1986）把颱風描述成<b>卡諾熱機</b>：以溫暖海面（約 300 K）為熱源、對流層頂（約 200 K）為冷源，理論效率約 1/3。由此可估算「最大可能強度」（MPI）——海溫越高、對流層頂越冷，颱風潛在強度越強。這也是全球暖化下強颱比例可能增加的理論基礎。</p>
+        </div>
+        <div class="mech">
+          <h3>🌀 梯度風平衡</h3>
+          <p>颱風內的風大致處於<b>氣壓梯度力、科氏力與離心力</b>的三力平衡。中心氣壓越低、等壓線越密，氣壓梯度力越大，風速越強。巴威接近台灣時中心氣壓 960 hPa，比外圍低了約 50 hPa，強大的氣壓梯度正是 13 級風的來源。</p>
+        </div>
+        <div class="mech">
+          <h3>👁️ 颱風眼為什麼無風無雨？</h3>
+          <p>眼牆劇烈上升的空氣有一部分在高層向內、於眼區<b>下沉</b>；下沉絕熱增溫使雲滴蒸發，因此眼內晴朗、溫暖（暖心結構）、風力微弱。颱風眼通過時的短暫平靜常讓人誤以為颱風已離開——其實另一半眼牆馬上就到。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 3. 模擬器 ===== -->
+  <section>
+    <h2><span class="no">03</span>生成條件模擬器</h2>
+    <p class="lead">調整海溫、緯度與垂直風切三個關鍵參數，觀察熱帶擾動能否發展、又能發展到哪一級。試著找出「為什麼赤道上不會有颱風」、「為什麼風切一大颱風就散掉」。</p>
+    <div class="card">
+      <div class="sim-box">
+        <div class="sim-canvas-box"><canvas id="sim" width="760" height="480"></canvas></div>
+        <div>
+          <div class="slider-row">
+            <label>🌡️ 海表面溫度 SST <output id="oSST">29.0°C</output></label>
+            <input type="range" id="sst" min="24" max="31" step="0.1" value="29">
+            <div class="note">生成門檻約 26.5°C；菲律賓海夏季常達 29–30°C</div>
+          </div>
+          <div class="slider-row">
+            <label>🌍 生成緯度 <output id="oLat">15°N</output></label>
+            <input type="range" id="lat" min="0" max="35" step="1" value="15">
+            <div class="note">科氏參數 f = 2Ω sin φ，赤道為 0</div>
+          </div>
+          <div class="slider-row">
+            <label>💨 垂直風切 <output id="oShear">4 m/s</output></label>
+            <input type="range" id="shear" min="0" max="25" step="1" value="4">
+            <div class="note">200 hPa 與 850 hPa 之間的風速差；&gt;10 m/s 開始不利發展</div>
+          </div>
+          <div class="sim-result mid" id="simResult">
+            <span class="cat" id="simCat">—</span>
+            <span id="simDesc"></span>
+            <div class="sim-metrics">
+              <span class="metric" id="mF">f = —</span>
+              <span class="metric" id="mV">估計最大風速 = —</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 4. 分級 ===== -->
+  <section>
+    <h2><span class="no">04</span>台灣（中央氣象署）的颱風分級</h2>
+    <p class="lead">台灣以「近中心最大持續風速」分級，與美國的薩菲爾–辛普森分級（Cat.1–5）標準不同，比較新聞時要注意。</p>
+    <div class="card">
+      <div class="table-scroll">
+      <table>
+        <tr><th>分級</th><th>近中心最大風速</th><th>相當蒲福風級</th><th>備註</th></tr>
+        <tr><td>熱帶性低氣壓</td><td>&lt; 17.2 m/s</td><td>&lt; 8 級</td><td>尚未命名</td></tr>
+        <tr><td>輕度颱風</td><td>17.2 – 32.6 m/s</td><td>8 – 11 級</td><td>達此標準即命名</td></tr>
+        <tr class="hl"><td>中度颱風</td><td>32.7 – 50.9 m/s</td><td>12 – 15 級</td><td>巴威通過台灣北部海面時：38 m/s（13 級）、960 hPa</td></tr>
+        <tr><td>強烈颱風</td><td>≥ 51.0 m/s</td><td>≥ 16 級</td><td>巴威在海上巔峰期曾達此等級</td></tr>
+      </table>
+      </div>
+      <p class="tnote">巴威的例子說明颱風強度是「動態」的：在高海溫、低風切的菲律賓海面增強到強烈颱風，接近台灣後因緯度較高、海溫略降與環境轉差而減弱為中度颱風——但仍足以讓全台多數縣市停班停課。</p>
+    </div>
+  </section>
+
+  <!-- ===== 5. 台灣地形效應 ===== -->
+  <section>
+    <h2><span class="no">05</span>颱風遇上台灣：獨特的地形效應</h2>
+    <p class="lead">近 4,000 公尺高的中央山脈，讓台灣成為全世界研究「颱風–地形交互作用」最好的天然實驗室。</p>
+    <div class="tw-grid">
+      <div class="tw">
+        <h3>⛰️ 中央山脈破壞環流</h3>
+        <p>颱風登陸東岸時，低層環流被山脈切斷、結構迅速變差，常在西岸出現「副中心」；路徑也可能打轉或不連續跳躍。這是路徑預報最困難的路段。</p>
+      </div>
+      <div class="tw">
+        <h3>🌧️ 地形抬升降雨</h3>
+        <p>颱風環流的暖濕氣流被迫沿迎風坡上升，降雨可放大數倍。2009 年莫拉克颱風在阿里山兩天降下近 3,000 毫米雨量，即為地形抬升與滯留環流疊加的極端案例。</p>
+      </div>
+      <div class="tw">
+        <h3>🌪️ 西北颱</h3>
+        <p>當颱風中心從台灣東北方海面向西北通過（不登陸），環流風向恰與台北盆地淡水河口走向一致，海水倒灌加上排水不及，最易造成大台北淹水——巴威的路徑正屬於這種令人警戒的類型。</p>
+      </div>
+      <div class="tw">
+        <h3>🌊 共伴效應</h3>
+        <p>秋季颱風外圍環流與東北季風交會，水氣在台灣東北部、宜蘭一帶輻合，即使颱風中心很遠也能降下致災豪雨（如 2010 年梅姬颱風蘇花公路事件）。</p>
+      </div>
+      <div class="tw">
+        <h3>🔥 焚風</h3>
+        <p>氣流翻越山脈後沿背風坡下沉，絕熱增溫且乾燥，台東常在颱風環流下出現超過 38°C 的焚風，農作物可能一夜枯萎。</p>
+      </div>
+      <div class="tw">
+        <h3>🔄 藤原效應</h3>
+        <p>兩個颱風相距約 1,000 公里內時會互相牽引、繞著共同質心旋轉，使路徑變得難以預測。西北太平洋颱風密集，台灣附近不時上演。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 6. 巴威個案 ===== -->
+  <section>
+    <h2><span class="no">06</span>個案分析：2026 年第 9 號颱風「巴威」</h2>
+    <p class="lead">「巴威」（Ba Vì）由越南命名，源自河內近郊的巴位山。它的一生完整示範了本頁所有概念。</p>
+    <div class="card">
+      <div class="case-grid">
+        <ul class="timeline">
+          <li><b>6 月下旬｜擾動階段：</b>西太平洋深處的熱帶擾動（編號 95W）在季風槽內獲得初始渦度——生成條件⑥。</li>
+          <li><b>7 月 1–2 日｜成長：</b>行經 SST 約 29–30°C 的暖洋面，深對流組織化；7 月 2 日達熱帶風暴強度，獲命名「巴威」。</li>
+          <li><b>7 月上旬｜快速增強：</b>低風切、高海洋熱含量環境下建立暖心與清晰颱風眼，巔峰達<b>強烈颱風</b>等級，被稱為當年「風王」候選。</li>
+          <li><b>7 月 10–11 日｜影響台灣：</b>以中度颱風之姿（960 hPa、38 m/s）通過台灣北部海面，屬「西北颱」型路徑；北台灣沿海出現 12 級以上陣風、山區豪雨，全台多數縣市 7/11 停班停課。</li>
+          <li><b>7 月 12 日｜遠離：</b>向北進入較涼海域，能量供應中斷，逐漸減弱變性，台灣脫離暴風圈。</li>
+        </ul>
+        <div>
+          <div class="table-scroll">
+          <table>
+            <tr><th colspan="2">巴威颱風 近台時觀測（7/11 18 時）</th></tr>
+            <tr><td>中心位置</td><td>台北北北東方約 260 公里海面</td></tr>
+            <tr><td>中心氣壓</td><td>960 hPa</td></tr>
+            <tr><td>近中心最大風速</td><td>38 m/s（13 級）</td></tr>
+            <tr><td>瞬間最大陣風</td><td>48 m/s（15 級）</td></tr>
+            <tr><td>移動方向</td><td>西北轉北，通過台灣北部海面</td></tr>
+            <tr><td>陸警範圍</td><td>北北基、宜蘭、桃竹苗、馬祖</td></tr>
+          </table>
+          </div>
+          <p class="tnote" style="margin-top:12px">觀察重點：巴威不登陸卻仍致災——「西北颱」型路徑讓其南側環流正面灌入北台灣，加上地形抬升，宜蘭與北部山區出現豪雨以上等級降雨。這說明<b>颱風的威脅取決於路徑與結構，而不只是登陸與否</b>。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 7. 影響總評 ===== -->
+  <section>
+    <h2><span class="no">07</span>颱風對台灣：災害與資源的一體兩面</h2>
+    <div class="impact-cols">
+      <div class="impact risk">
+        <h3>⚠️ 災害面</h3>
+        <ul>
+          <li><b>強風</b>：結構物、農作物與電力設施受損；沿海長浪與風暴潮。</li>
+          <li><b>豪雨洪水</b>：短延時強降雨超過都市排水設計標準，低窪地區淹水。</li>
+          <li><b>坡地災害</b>：土壤含水飽和引發山崩、土石流（莫拉克小林村事件為極端案例）。</li>
+          <li><b>複合災害</b>：堰塞湖、道路中斷、供水供電癱瘓，災後復原可達數月。</li>
+        </ul>
+      </div>
+      <div class="impact gift">
+        <h3>💧 資源面</h3>
+        <ul>
+          <li>颱風降雨是台灣<b>水庫的主要進帳來源之一</b>，夏秋颱風雨在部分地區可占年雨量三成以上。</li>
+          <li>缺乏颱風的年份（如 2020–2021 年百年大旱）常導致<b>嚴重限水</b>。</li>
+          <li>颱風攪動海洋帶來湧升流，翻起營養鹽，有利<b>漁場生產力</b>。</li>
+          <li>吹散空氣污染物、緩解夏季高溫與電力尖峰。</li>
+        </ul>
+      </div>
+    </div>
+    <p class="tnote" style="margin-top:12px">因此台灣的課題從來不是「希望颱風不要來」，而是<b>如何與颱風共存</b>：精準預報、國土規劃、防洪治水與滾動式的防災應變。</p>
+  </section>
+
+  <!-- ===== 8. Quiz ===== -->
+  <section>
+    <h2><span class="no">08</span>進階自我檢測</h2>
+    <p class="lead">六題檢驗你的理解程度，包含觀念題與巴威個案應用題。</p>
+    <div class="card" id="quiz"></div>
+  </section>
+
+  <footer>
+    熱帶氣旋生成的科學｜個案：2026 年第 9 號颱風巴威（BAVI）<br>
+    即時颱風資訊請以交通部中央氣象署（www.cwa.gov.tw）發布為準｜
+    國小版請見 <a href="typhoon-education.html">小朋友的颱風教室</a>
+  </footer>
+</div>
+
+<script>
+/* ================= 模擬器 ================= */
+const cv = document.getElementById('sim');
+const cx2 = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+const SEA_Y = H * 0.72;
+
+const el = id => document.getElementById(id);
+const sstIn = el('sst'), latIn = el('lat'), shearIn = el('shear');
+const state = { sst: 29, lat: 15, shear: 4 };
+let spin = 0, vapors = [];
+
+const OMEGA = 7.292e-5;
+
+function evaluate() {
+  const { sst, lat, shear } = state;
+  const f = 2 * OMEGA * Math.sin(lat * Math.PI / 180);
+  let vmax = 0, cls, desc, key;
+
+  const warmEnough = sst >= 26.5;
+  const spinEnough = lat >= 5;
+  const shearOK = shear <= 12;
+
+  if (!warmEnough) {
+    cls = '無法生成'; key = 'none';
+    desc = 'SST 低於 26.5°C 門檻，蒸發供應的潛熱不足以維持深對流，擾動無法自我增強（條件①不滿足）。';
+  } else if (!spinEnough) {
+    cls = '無法生成'; key = 'none';
+    desc = '緯度太低、科氏參數趨近於零，輻合的氣流無法有效旋轉起來，能量聚不成渦旋（條件②不滿足）——這就是赤道上沒有颱風的原因。';
+  } else if (!shearOK) {
+    cls = '發展受抑制'; key = 'none';
+    desc = '垂直風切過強，對流塔被高低層風「錯開」，潛熱無法集中在同一氣柱釋放，暖心結構建立不起來（條件③不滿足）。';
+  } else {
+    // potential intensity grows with SST, damped by shear & marginal latitude
+    vmax = 18 + (sst - 26.5) * 9 - Math.max(0, shear - 4) * 1.6;
+    if (lat > 30) vmax -= (lat - 30) * 1.2;         // cooler waters/baroclinic zone
+    vmax = Math.max(12, Math.round(vmax * 10) / 10);
+    if (vmax < 17.2)      { cls = '熱帶性低氣壓'; key = 'td';    desc = '環境勉強允許發展，但能量供應有限，僅維持熱帶性低氣壓強度。'; }
+    else if (vmax < 32.7) { cls = '輕度颱風';     key = 'mild';  desc = '條件齊備、正回饋啟動——擾動組織成颱風並獲得命名。'; }
+    else if (vmax < 51)   { cls = '中度颱風';     key = 'mid';   desc = '高海溫與低風切讓暖心持續加深，颱風眼逐漸清晰。巴威通過台灣北部海面時正是此等級（38 m/s）。'; }
+    else                  { cls = '強烈颱風';     key = 'severe';desc = '接近此海域的最大可能強度（MPI），眼牆對流猛烈——巴威在菲律賓海巔峰期即達此級。'; }
+  }
+  return { f, vmax, cls, desc, key };
+}
+
+function refreshUI() {
+  el('oSST').textContent = state.sst.toFixed(1) + '°C';
+  el('oLat').textContent = state.lat + '°N';
+  el('oShear').textContent = state.shear + ' m/s';
+  const r = evaluate();
+  el('simCat').textContent = r.cls;
+  el('simDesc').textContent = r.desc;
+  el('mF').textContent = 'f = ' + r.f.toExponential(2) + ' s⁻¹';
+  el('mV').textContent = r.vmax ? '估計最大風速 ≈ ' + r.vmax + ' m/s' : '估計最大風速 = —';
+  el('simResult').className = 'sim-result ' + r.key;
+}
+
+[['sst', sstIn, parseFloat], ['lat', latIn, parseInt], ['shear', shearIn, parseInt]].forEach(([k, input, parse]) => {
+  input.addEventListener('input', () => { state[k] = parse(input.value); refreshUI(); });
+});
+refreshUI();
+
+/* --- canvas rendering --- */
+function seaColor() {
+  const t = Math.min(1, Math.max(0, (state.sst - 24) / 7));
+  return `rgb(${Math.round(2 + t * 20)}, ${Math.round(80 + t * 40)}, ${Math.round(140 - t * 20)})`;
+}
+
+function drawScene(t) {
+  const r = evaluate();
+  cx2.clearRect(0, 0, W, H);
+
+  // sky darkens with intensity
+  const dark = r.vmax ? Math.min(1, r.vmax / 60) : 0.1;
+  const sky = cx2.createLinearGradient(0, 0, 0, SEA_Y);
+  sky.addColorStop(0, `rgb(${100 - dark * 60}, ${150 - dark * 70}, ${210 - dark * 60})`);
+  sky.addColorStop(1, `rgb(${170 - dark * 80}, ${200 - dark * 80}, ${235 - dark * 60})`);
+  cx2.fillStyle = sky;
+  cx2.fillRect(0, 0, W, SEA_Y);
+
+  // sea
+  const g = cx2.createLinearGradient(0, SEA_Y, 0, H);
+  g.addColorStop(0, seaColor()); g.addColorStop(1, '#02182e');
+  cx2.fillStyle = g;
+  cx2.fillRect(0, SEA_Y, W, H - SEA_Y);
+  cx2.strokeStyle = 'rgba(255,255,255,.4)'; cx2.lineWidth = 2.5;
+  const amp = 3 + (r.vmax || 0) * 0.12;
+  cx2.beginPath();
+  for (let x = 0; x <= W; x += 8) {
+    const y = SEA_Y + 10 + Math.sin(x * 0.03 + t * 1.4) * amp;
+    x === 0 ? cx2.moveTo(x, y) : cx2.lineTo(x, y);
+  }
+  cx2.stroke();
+
+  // vapor particles (rate ~ SST)
+  const evap = Math.max(0, (state.sst - 24) / 7);
+  if (Math.random() < evap * 0.8) {
+    vapors.push({ x: 90 + Math.random() * (W - 180), y: SEA_Y - 4, r: 2.5 + Math.random() * 3.5, v: 0.7 + Math.random() });
+  }
+  const ccx = W * 0.5, ccy = H * 0.32;
+  const genesis = r.key !== 'none';
+  vapors.forEach(p => {
+    p.y -= p.v * (1 + evap);
+    if (genesis) p.x += (ccx - p.x) * 0.01;
+    // shear pushes vapor sideways
+    p.x += state.shear * 0.06;
+  });
+  vapors = vapors.filter(p => p.y > ccy - 30 && p.x < W + 20);
+  cx2.fillStyle = 'rgba(255,255,255,.7)';
+  vapors.forEach(p => { cx2.beginPath(); cx2.arc(p.x, p.y, p.r, 0, Math.PI * 2); cx2.fill(); });
+
+  // cyclone / cloud
+  if (!genesis) {
+    // disorganized or sheared clouds
+    cx2.fillStyle = 'rgba(255,255,255,.8)';
+    const off = state.shear * 6;
+    puff(ccx - 60, ccy + 10, 24); puff(ccx, ccy, 30); puff(ccx + 60 + off, ccy - 14, 26);
+    if (state.shear > 12) {
+      cx2.strokeStyle = 'rgba(255,213,79,.95)'; cx2.lineWidth = 3.5;
+      arrowH(cx2, ccx - 150, ccy - 90, ccx + 170, ccy - 90);
+      cx2.fillStyle = '#ffd54f'; cx2.font = 'bold 15px sans-serif';
+      cx2.fillText('強垂直風切：高層雲被吹離低層中心', ccx - 150, ccy - 102);
+    }
+    cx2.fillStyle = 'rgba(255,255,255,.9)'; cx2.font = 'bold 16px sans-serif';
+    cx2.fillText(state.sst < 26.5 ? '海溫不足：對流稀疏零散' : (state.lat < 5 ? '科氏力≈0：氣流直進直出，轉不起來' : ''), 60, SEA_Y - 34);
+    return;
+  }
+
+  const size = 30 + Math.min(1, r.vmax / 60) * 85;
+  const speed = 0.4 + (r.vmax / 60) * 2.6;
+  spin -= 0.016 * speed;
+  cx2.save();
+  cx2.translate(ccx, ccy);
+  cx2.rotate(spin);
+  for (let arm = 0; arm < 4; arm++) {
+    cx2.save(); cx2.rotate(arm * Math.PI / 2);
+    cx2.beginPath();
+    for (let i = 0; i <= 26; i++) {
+      const a = i * 0.14, rad = 7 + i * (size / 28);
+      const x = Math.cos(a) * rad, y = Math.sin(a) * rad;
+      i === 0 ? cx2.moveTo(x, y) : cx2.lineTo(x, y);
+    }
+    cx2.strokeStyle = 'rgba(255,255,255,.88)';
+    cx2.lineWidth = 9 + size * 0.1; cx2.lineCap = 'round';
+    cx2.stroke();
+    cx2.restore();
+  }
+  if (r.vmax >= 32.7) { // eye appears at 中颱
+    cx2.fillStyle = '#05264d';
+    cx2.beginPath(); cx2.arc(0, 0, 8 + size * 0.1, 0, Math.PI * 2); cx2.fill();
+    cx2.strokeStyle = '#fff'; cx2.lineWidth = 2.5;
+    cx2.beginPath(); cx2.arc(0, 0, 8 + size * 0.1, 0, Math.PI * 2); cx2.stroke();
+  }
+  cx2.restore();
+
+  // rain under storm
+  cx2.strokeStyle = 'rgba(179,229,252,.75)'; cx2.lineWidth = 2;
+  const drops = Math.round(r.vmax / 3);
+  for (let i = 0; i < drops; i++) {
+    const rx = ccx - size + Math.random() * size * 2;
+    const ry = ccy + size * 0.6 + Math.random() * (SEA_Y - ccy - size * 0.6);
+    cx2.beginPath(); cx2.moveTo(rx, ry); cx2.lineTo(rx - 4, ry + 11); cx2.stroke();
+  }
+  cx2.fillStyle = 'rgba(255,255,255,.95)'; cx2.font = 'bold 15px sans-serif';
+  cx2.fillText('逆時針旋轉（北半球）', 24, 34);
+}
+
+function puff(x, y, r) { cx2.beginPath(); cx2.arc(x, y, r, 0, Math.PI * 2); cx2.fill(); }
+function arrowH(c, x1, y1, x2, y2) {
+  c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke();
+  c.beginPath(); c.moveTo(x2, y2); c.lineTo(x2 - 12, y2 - 6); c.lineTo(x2 - 12, y2 + 6); c.closePath();
+  c.fillStyle = '#ffd54f'; c.fill();
+}
+
+function loop(ms) { drawScene(ms / 1000); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+
+/* ================= Quiz ================= */
+const QUESTIONS = [
+  {
+    q: '1️⃣ 熱帶氣旋幾乎不會在赤道（南北緯 5° 以內）生成，最主要的原因是？',
+    opts: ['赤道海水太冷', '赤道的科氏參數 f = 2Ω sin φ 趨近於零，氣流無法旋轉組織', '赤道沒有水氣', '赤道氣壓太高'],
+    ans: 1,
+    why: '赤道 sin φ ≈ 0，科氏力消失，輻合氣流缺乏旋轉機制——即使海水再暖也組織不起渦旋。'
+  },
+  {
+    q: '2️⃣ 颱風能量的根本來源是？',
+    opts: ['地震釋放的能量', '海水蒸發、水氣凝結時釋放的潛熱', '太陽直接加熱空氣', '地球磁場'],
+    ans: 1,
+    why: '水氣凝結釋放潛熱、加熱氣柱、降低中心氣壓，再抽入更多暖濕空氣，形成 WISHE 正回饋。'
+  },
+  {
+    q: '3️⃣ 強烈的垂直風切為什麼不利颱風發展？',
+    opts: ['會把海水吹涼', '會使雨下得太多', '會把對流塔高低層錯開，潛熱無法集中、暖心建立不起來', '會增加科氏力'],
+    ans: 2,
+    why: '風切將高層雲砧吹離低層環流中心，加熱無法集中在同一垂直氣柱，渦旋因而傾斜、減弱。'
+  },
+  {
+    q: '4️⃣ 巴威通過台灣北部海面時（960 hPa、最大風速 38 m/s），依中央氣象署分級屬於？',
+    opts: ['輕度颱風', '中度颱風', '強烈颱風', '超級颱風'],
+    ans: 1,
+    why: '32.7–50.9 m/s 為中度颱風。巴威海上巔峰曾達強烈颱風，近台前減弱——強度是動態變化的。'
+  },
+  {
+    q: '5️⃣ 巴威不登陸、僅通過台灣北部海面，北台灣卻嚴陣以待，主要因為這種路徑屬於？',
+    opts: ['藤原效應', '共伴效應', '西北颱：環流正面灌入北部、淡水河口易海水倒灌', '焚風效應'],
+    ans: 2,
+    why: '中心在北部海面向西北移動時，其環流風向不利大台北排水，歷史上多次造成台北嚴重淹水。'
+  },
+  {
+    q: '6️⃣ 關於颱風對台灣水資源的敘述，何者正確？',
+    opts: ['颱風雨太髒，水庫不會蓄留', '颱風降雨是水庫重要進帳，無颱風年份容易發生乾旱', '台灣用水全靠地下水，與颱風無關', '颱風只會讓水庫潰壩'],
+    ans: 1,
+    why: '2020–2021 年無颱風登陸，隨後爆發百年大旱、多地限水，正是最好的反面教材。'
+  }
+];
+
+const quizBox = document.getElementById('quiz');
+let score = 0, answered = 0;
+QUESTIONS.forEach(item => {
+  const div = document.createElement('div');
+  div.className = 'quiz-q';
+  div.innerHTML = '<h3>' + item.q + '</h3>';
+  const opts = document.createElement('div'); opts.className = 'quiz-opts';
+  const fb = document.createElement('div'); fb.className = 'quiz-feedback';
+  item.opts.forEach((o, oi) => {
+    const btn = document.createElement('button');
+    btn.className = 'quiz-opt'; btn.textContent = o;
+    btn.addEventListener('click', () => {
+      if (div.dataset.done) return;
+      div.dataset.done = '1'; answered++;
+      if (oi === item.ans) { btn.classList.add('right'); fb.textContent = '⭕ ' + item.why; fb.style.color = 'var(--good)'; score++; }
+      else {
+        btn.classList.add('wrong');
+        opts.children[item.ans].classList.add('right');
+        fb.textContent = '❌ 正解：「' + item.opts[item.ans] + '」。' + item.why;
+        fb.style.color = 'var(--bad)';
+      }
+      if (answered === QUESTIONS.length) showScore();
+    });
+    opts.appendChild(btn);
+  });
+  div.appendChild(opts); div.appendChild(fb); quizBox.appendChild(div);
+});
+
+function showScore() {
+  const div = document.createElement('div');
+  div.className = 'quiz-score';
+  const msg = score === 6 ? '🏆 全對！你已掌握熱帶氣旋學的核心概念。'
+    : score >= 4 ? '👍 不錯！回頭複習答錯的段落，概念就完整了。'
+    : '📚 建議從第 01、02 節重新閱讀，再玩一次模擬器加深印象。';
+  div.textContent = `得分 ${score} / ${QUESTIONS.length}　${msg}`;
+  quizBox.appendChild(div);
+  div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+</script>
+</body>
+</html>
