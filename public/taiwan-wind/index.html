@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>台灣風的四季 — 互動風場教學模型</title>
+<style>
+:root{
+  --bg:#eef3f6; --surface:#ffffff; --surface2:#f6f9fb;
+  --ink:#16232e; --muted:#5b6c79; --line:#d8e0e6;
+  --accent:#0e7c86; --accent-ink:#ffffff; --accent-soft:#e0f0f1;
+  --spring:#3f9d5a; --summer:#e0634d; --autumn:#c98a20; --winter:#4c7fb8;
+  --chip-ink:#ffffff;
+  --radius:10px;
+  --serif:'Noto Serif TC','Source Han Serif TC','Songti TC','PMingLiU',serif;
+  --sans:'Noto Sans TC','PingFang TC','Microsoft JhengHei',system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0c141c; --surface:#14202b; --surface2:#182634;
+    --ink:#e8eef2; --muted:#93a4b2; --line:#24343f;
+    --accent:#3fc1cb; --accent-ink:#062226; --accent-soft:#12333a;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#eef3f6; --surface:#ffffff; --surface2:#f6f9fb;
+  --ink:#16232e; --muted:#5b6c79; --line:#d8e0e6;
+  --accent:#0e7c86; --accent-ink:#ffffff; --accent-soft:#e0f0f1;
+}
+:root[data-theme="dark"]{
+  --bg:#0c141c; --surface:#14202b; --surface2:#182634;
+  --ink:#e8eef2; --muted:#93a4b2; --line:#24343f;
+  --accent:#3fc1cb; --accent-ink:#062226; --accent-soft:#12333a;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.7;}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 60px;}
+header.site{padding:30px 0 12px;display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 18px;}
+header.site h1{font-family:var(--serif);font-size:clamp(26px,4vw,38px);margin:0;letter-spacing:.06em;text-wrap:balance;}
+header.site .sub{color:var(--muted);font-size:14px;}
+.controlbar{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 18px;display:grid;grid-template-columns:auto 1fr auto;gap:8px 20px;align-items:center;margin-bottom:14px;}
+.month-big{display:flex;align-items:center;gap:10px;min-width:150px;}
+.month-big .num{font-family:var(--serif);font-size:40px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;}
+.chip{display:inline-block;padding:2px 12px;border-radius:999px;color:var(--chip-ink);font-size:14px;letter-spacing:.15em;}
+.chip.spring{background:var(--spring)} .chip.summer{background:var(--summer)}
+.chip.autumn{background:var(--autumn)} .chip.winter{background:var(--winter)}
+.slider-zone{display:flex;flex-direction:column;gap:2px;}
+input[type=range]{width:100%;accent-color:var(--accent);}
+.slider-ticks{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);
+  font-variant-numeric:tabular-nums;padding:0 4px;}
+.playbtns{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+button{font-family:var(--sans);cursor:pointer;}
+.btn{background:var(--accent);color:var(--accent-ink);border:none;border-radius:8px;
+  padding:8px 16px;font-size:15px;font-weight:600;}
+.btn.ghost{background:var(--surface2);color:var(--ink);border:1px solid var(--line);font-weight:400;padding:6px 10px;font-size:13px;}
+.btn:focus-visible,.tabbtn:focus-visible,input:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;align-items:start;}
+@media (max-width:900px){.layout{grid-template-columns:1fr}.controlbar{grid-template-columns:1fr}}
+.map-wrap{position:relative;background:#0b1826;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);}
+.map-wrap canvas{display:block;width:100%;height:auto;}
+#cvParticles{position:absolute;inset:0;width:100%;height:100%;}
+.map-note{position:absolute;left:10px;top:8px;color:#9db4c6;font-size:12px;pointer-events:none;}
+.panel{display:flex;flex-direction:column;gap:14px;}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;}
+.card h2{font-family:var(--serif);font-size:18px;margin:0 0 8px;letter-spacing:.05em;}
+.card h3{font-size:14px;margin:14px 0 4px;color:var(--muted);font-weight:600;letter-spacing:.1em;}
+.month-desc{font-size:14px;margin:4px 0;}
+.focus-line{font-size:13px;background:var(--accent-soft);border-radius:8px;padding:8px 10px;margin-top:8px;}
+.focus-line b{color:var(--accent);}
+.readout{display:flex;gap:16px;align-items:center;margin:6px 0 2px;}
+.readout .dirarrow{font-size:30px;display:inline-block;transition:transform .5s;color:var(--accent);}
+.readout .val{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;}
+.readout .unit{font-size:12px;color:var(--muted);}
+.rose-caption{font-size:12.5px;color:var(--muted);margin-top:4px;}
+label.toggle{display:flex;align-items:center;gap:8px;font-size:14px;margin:6px 0;}
+select{background:var(--surface2);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font-size:14px;font-family:var(--sans);}
+.legendbar{position:absolute;left:10px;bottom:10px;background:rgba(8,20,32,.72);border-radius:8px;
+  padding:6px 10px;color:#cfdde8;font-size:11px;pointer-events:none;}
+.legendbar .bar{width:170px;height:8px;border-radius:4px;margin:3px 0;
+  background:linear-gradient(90deg,#33566e,#3f89b8,#53c6d8,#ffd166,#ff8f5e,#ef5350);}
+.legendbar .ticks{display:flex;justify-content:space-between;font-variant-numeric:tabular-nums;}
+.tabs{display:flex;gap:6px;margin:26px 0 0;border-bottom:2px solid var(--line);flex-wrap:wrap;}
+.tabbtn{background:none;border:none;border-bottom:3px solid transparent;padding:10px 16px;font-size:16px;
+  color:var(--muted);font-family:var(--serif);letter-spacing:.08em;}
+.tabbtn[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent);font-weight:700;}
+.tabpanel{display:none;padding-top:18px;}
+.tabpanel.active{display:block;}
+.monthgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;}
+.mcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;
+  border-top:4px solid var(--line);cursor:pointer;}
+.mcard.spring{border-top-color:var(--spring)} .mcard.summer{border-top-color:var(--summer)}
+.mcard.autumn{border-top-color:var(--autumn)} .mcard.winter{border-top-color:var(--winter)}
+.mcard h3{margin:0 0 6px;font-family:var(--serif);font-size:17px;color:var(--ink);}
+.mcard p{margin:0;font-size:13.5px;color:var(--muted);}
+.mcard .go{font-size:12px;color:var(--accent);margin-top:8px;display:inline-block;}
+details.kcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  margin-bottom:10px;overflow:hidden;}
+details.kcard summary{cursor:pointer;padding:14px 18px;font-family:var(--serif);font-size:17px;
+  letter-spacing:.04em;list-style:none;display:flex;gap:10px;align-items:baseline;}
+details.kcard summary::-webkit-details-marker{display:none;}
+details.kcard summary .no{color:var(--accent);font-variant-numeric:tabular-nums;font-size:14px;}
+details.kcard[open] summary{border-bottom:1px solid var(--line);}
+details.kcard .body{padding:12px 18px 16px;font-size:14.5px;max-width:68ch;}
+details.kcard .think{background:var(--accent-soft);border-radius:8px;padding:8px 12px;font-size:13.5px;margin-top:10px;}
+details.kcard .think b{color:var(--accent);}
+.quiz-item{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 18px;margin-bottom:12px;max-width:72ch;}
+.quiz-item .qt{font-weight:600;margin-bottom:8px;}
+.quiz-item label{display:block;padding:6px 10px;border-radius:8px;font-size:14.5px;cursor:pointer;}
+.quiz-item label:hover{background:var(--surface2);}
+.quiz-item label.correct{background:#e4f3e7;color:#1c5c2c;font-weight:600;}
+.quiz-item label.wrong{background:#fbe7e4;color:#8c2f22;}
+@media (prefers-color-scheme: dark){
+  .quiz-item label.correct{background:#1c3a26;color:#9fdcae;}
+  .quiz-item label.wrong{background:#40201c;color:#f0a89c;}
+}
+:root[data-theme="light"] .quiz-item label.correct{background:#e4f3e7;color:#1c5c2c;}
+:root[data-theme="light"] .quiz-item label.wrong{background:#fbe7e4;color:#8c2f22;}
+:root[data-theme="dark"] .quiz-item label.correct{background:#1c3a26;color:#9fdcae;}
+:root[data-theme="dark"] .quiz-item label.wrong{background:#40201c;color:#f0a89c;}
+.quiz-item .expl{display:none;font-size:13.5px;color:var(--muted);border-top:1px dashed var(--line);
+  margin-top:8px;padding-top:8px;}
+.quiz-item.answered .expl{display:block;}
+#quizScore{font-size:16px;font-weight:700;margin-bottom:14px;}
+.teacher article{max-width:70ch;font-size:14.5px;}
+.teacher h3{font-family:var(--serif);font-size:17px;margin:20px 0 6px;}
+.teacher ul{padding-left:22px;margin:6px 0;}
+.teacher li{margin:4px 0;}
+footer{margin-top:40px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line);padding-top:14px;max-width:78ch;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="site">
+  <h1>台灣風的四季</h1>
+  <div class="sub">互動風場教學模型｜看見季風、地形與颱風如何塑造台灣的風</div>
+</header>
+
+<div class="controlbar">
+  <div class="month-big">
+    <span class="num" id="monthNum">1月</span>
+    <span class="chip winter" id="seasonChip">冬</span>
+  </div>
+  <div class="slider-zone">
+    <input type="range" id="timeSlider" min="0" max="12" step="0.01" value="0.5" aria-label="月份">
+    <div class="slider-ticks"><span>1月</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12月</span></div>
+  </div>
+  <div class="playbtns">
+    <button class="btn" id="playBtn">⏸ 暫停</button>
+    <button class="btn ghost" data-jump="3.5">春</button>
+    <button class="btn ghost" data-jump="6.5">夏</button>
+    <button class="btn ghost" data-jump="9.5">秋</button>
+    <button class="btn ghost" data-jump="0.5">冬</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="map-wrap" id="mapWrap">
+    <canvas id="cvBase" width="940" height="926"></canvas>
+    <canvas id="cvParticles" width="940" height="926"></canvas>
+    <div class="map-note">線條=空氣的移動路徑，顏色=風速（此為簡化教學模型，非真實預報）</div>
+    <div class="legendbar">
+      風速 (公尺/秒)
+      <div class="bar"></div>
+      <div class="ticks"><span>0</span><span>4</span><span>8</span><span>12</span><span>16+</span></div>
+    </div>
+  </div>
+
+  <aside class="panel">
+    <div class="card" id="monthCard">
+      <h2 id="mcTitle">1月・東北季風最強盛</h2>
+      <p class="month-desc" id="mcDesc"></p>
+      <div class="focus-line" id="mcFocus"></div>
+    </div>
+
+    <div class="card">
+      <h2>觀測站</h2>
+      <select id="stationSel" aria-label="選擇觀測站"></select>
+      <div class="readout">
+        <span class="dirarrow" id="dirArrow" aria-hidden="true">↓</span>
+        <div>
+          <span class="val" id="spdVal">--</span><span class="unit"> m/s</span><br>
+          <span class="unit" id="dirText">--</span>
+        </div>
+      </div>
+      <h3>全年風花圖（風從哪個方向來）</h3>
+      <canvas id="cvRose" width="240" height="240" style="width:100%;max-width:240px;display:block;margin:0 auto;"></canvas>
+      <p class="rose-caption" id="roseCaption"></p>
+      <p class="rose-caption">花瓣越長＝該方向的風越常出現、越強。顏色＝季節：
+        <span class="chip spring" style="font-size:11px;padding:0 8px">春</span>
+        <span class="chip summer" style="font-size:11px;padding:0 8px">夏</span>
+        <span class="chip autumn" style="font-size:11px;padding:0 8px">秋</span>
+        <span class="chip winter" style="font-size:11px;padding:0 8px">冬</span>
+      </p>
+    </div>
+
+    <div class="card">
+      <h2>實驗控制台</h2>
+      <label class="toggle"><input type="checkbox" id="tglTerrain" checked> 地形效應（中央山脈、海峽狹管）</label>
+      <label class="toggle"><input type="checkbox" id="tglHeat" checked> 風速底色</label>
+      <label class="toggle">海陸風：
+        <select id="selBreeze">
+          <option value="off">關閉</option>
+          <option value="day">白天（海風）</option>
+          <option value="night">夜晚（陸風）</option>
+        </select>
+      </label>
+      <label class="toggle"><input type="checkbox" id="tglTyphoon"> 颱風模式（可用滑鼠拖動颱風）</label>
+      <label class="toggle" id="tyStrengthRow" style="display:none">颱風強度：
+        <select id="selTyStrength">
+          <option value="25">輕度颱風</option>
+          <option value="43" selected>中度颱風</option>
+          <option value="55">強烈颱風</option>
+        </select>
+      </label>
+      <p class="rose-caption">小實驗：關掉「地形效應」，比較有沒有中央山脈時，台灣東西兩側的風有什麼不同？</p>
+    </div>
+  </aside>
+</div>
+
+<nav class="tabs" role="tablist">
+  <button class="tabbtn" role="tab" aria-selected="true" data-tab="months">每月風場圖鑑</button>
+  <button class="tabbtn" role="tab" aria-selected="false" data-tab="knowledge">風的知識庫</button>
+  <button class="tabbtn" role="tab" aria-selected="false" data-tab="quiz">小測驗</button>
+  <button class="tabbtn" role="tab" aria-selected="false" data-tab="teacher">給老師</button>
+</nav>
+
+<section class="tabpanel active" id="tab-months">
+  <div class="monthgrid" id="monthGrid"></div>
+</section>
+
+<section class="tabpanel" id="tab-knowledge" aria-label="風的知識庫"></section>
+
+<section class="tabpanel" id="tab-quiz">
+  <div id="quizScore">作答進度：0 / 10</div>
+  <div id="quizList"></div>
+</section>
+
+<section class="tabpanel teacher" id="tab-teacher">
+  <article>
+    <h3>這個模型能教什麼？</h3>
+    <p>本模型把台灣周圍的「氣候平均風場」簡化成可以動手操作的模擬，對應國中自然科（地球科學）「天氣與氣候」單元的核心概念：季風成因（海陸性質差異）、地形對天氣的影響、颱風結構、以及海陸風的日夜循環。</p>
+    <h3>建議教學流程（3 堂課）</h3>
+    <ul>
+      <li><b>第 1 堂・觀察季風</b>：播放整年動畫，讓學生記錄 1 月與 7 月的風向差異，討論「為什麼風會隨季節反轉？」（海陸比熱差異 → 氣壓差 → 風）。</li>
+      <li><b>第 2 堂・地形改變風</b>：切換「地形效應」開關，觀察中央山脈背風側的弱風區、海峽狹管效應、恆春落山風；連結「新竹風城」「澎湖冬季強風」等生活經驗。</li>
+      <li><b>第 3 堂・颱風與應用</b>：開啟颱風模式拖動颱風，觀察逆時針環流與山脈的交互作用；討論離岸風電為什麼蓋在台灣海峽、冬天發電為什麼特別多。</li>
+    </ul>
+    <h3>常見迷思概念</h3>
+    <ul>
+      <li>「風向」指風<b>來</b>的方向，不是吹去的方向（東北風＝從東北方吹來）。</li>
+      <li>季風的主因是海陸「比熱」差異造成的氣壓差，不是地球自轉本身；科氏力只負責讓風偏轉。</li>
+      <li>颱風中心（颱風眼）風反而小，最強風在眼牆附近。</li>
+      <li>山脈不會「擋住」空氣消失，而是使氣流減速、繞流與翻越，背風側形成弱風區與雨影。</li>
+    </ul>
+    <p>完整教案、學習單與解答，請見專案 <code>docs/</code> 資料夾中的《教師手冊》與《學習單》。</p>
+  </article>
+</section>
+
+<footer>
+  本頁為教學用簡化模型：風場由「月平均季風＋地形修正＋可選颱風／海陸風」的簡化公式產生，
+  數值僅為示意，並非真實觀測或預報。實際天氣請參考中央氣象署。風速色階與各月敘述參考台灣氣候統計的一般特徵編寫。
+</footer>
+</div>
+
+<script>
+'use strict';
+/* ================= 地理資料（簡化） ================= */
+const LON0=117.2, LON1=124.4, LAT0=20.4, LAT1=26.9;
+const W=940, H=926;
+const RAD=Math.PI/180;
+const X=lon=>(lon-LON0)/(LON1-LON0)*W;
+const Y=lat=>(LAT1-lat)/(LAT1-LAT0)*H;
+
+const TW=[[121.54,25.30],[121.74,25.16],[121.92,25.12],[122.00,25.01],[121.90,24.94],
+[121.84,24.86],[121.83,24.68],[121.82,24.53],[121.75,24.36],[121.66,24.15],
+[121.63,24.00],[121.60,23.85],[121.52,23.60],[121.42,23.35],[121.35,23.10],
+[121.24,22.95],[121.16,22.85],[121.05,22.65],[120.95,22.45],[120.90,22.30],
+[120.88,22.10],[120.86,21.92],[120.78,21.90],[120.72,21.98],[120.70,22.15],
+[120.66,22.30],[120.55,22.35],[120.45,22.45],[120.35,22.52],[120.28,22.58],
+[120.22,22.70],[120.17,22.85],[120.10,23.00],[120.06,23.15],[120.08,23.32],
+[120.12,23.50],[120.18,23.65],[120.28,23.82],[120.40,23.98],[120.48,24.12],
+[120.53,24.25],[120.62,24.43],[120.75,24.62],[120.88,24.78],[120.96,24.90],
+[121.04,25.01],[121.12,25.08],[121.24,25.13],[121.38,25.17],[121.47,25.24]];
+
+const CN=[[117.2,22.8],[117.55,23.15],[117.75,23.35],[118.00,23.55],[118.15,23.75],
+[118.40,24.10],[118.65,24.35],[118.90,24.55],[119.05,24.72],[119.25,24.95],
+[119.50,25.15],[119.70,25.35],[119.90,25.60],[120.05,25.85],[120.20,26.10],
+[120.32,26.35],[120.45,26.60],[120.55,26.90],[117.2,26.90]];
+
+const RIDGE=[[121.44,24.63,2600],[121.30,24.40,3000],[121.18,24.12,3300],[121.05,23.85,3400],
+[120.96,23.55,3500],[120.92,23.30,3300],[120.85,23.05,3100],[120.78,22.75,2600],
+[120.74,22.45,1700],[120.72,22.15,900]];
+
+const STATIONS=[
+ {name:'淡水（北海岸）', lon:121.44, lat:25.19},
+ {name:'新竹（風城）',   lon:120.92, lat:24.85},
+ {name:'台中（西部平原）',lon:120.62, lat:24.20},
+ {name:'澎湖（海峽中央）',lon:119.56, lat:23.57},
+ {name:'恆春（落山風）', lon:120.74, lat:22.00},
+ {name:'台東（背風側）', lon:121.10, lat:22.75},
+ {name:'花蓮（東海岸）', lon:121.63, lat:23.98}];
+
+/* ============ 月平均基礎風（開闊海面，風向=風的來向） ============ */
+const MONTHLY=[ // 1月起：{d:來向(度,0=北), s:風速 m/s}
+ {d:30,s:9.0},{d:30,s:8.0},{d:35,s:6.5},{d:40,s:4.5},{d:200,s:4.0},{d:210,s:5.0},
+ {d:215,s:5.5},{d:215,s:5.0},{d:40,s:5.5},{d:35,s:7.5},{d:30,s:8.5},{d:30,s:9.5}];
+const MU=MONTHLY.map(m=>-m.s*Math.sin(m.d*RAD)); // u=向東分量
+const MV=MONTHLY.map(m=>-m.s*Math.cos(m.d*RAD)); // v=向北分量
+
+function baseWind(t){ // t∈[0,12)，值定在每月中點 k+0.5
+  let p=(t-0.5+12)%12;
+  const i=Math.floor(p), j=(i+1)%12;
+  let f=p-i; f=(1-Math.cos(Math.PI*f))/2;
+  return {u:MU[i]*(1-f)+MU[j]*f, v:MV[i]*(1-f)+MV[j]*f};
+}
+
+/* ============ 地形 ============ */
+function segDist(px,py,ax,ay,bx,by){
+  const dx=bx-ax, dy=by-ay;
+  const L2=dx*dx+dy*dy||1e-9;
+  let tt=((px-ax)*dx+(py-ay)*dy)/L2; tt=Math.max(0,Math.min(1,tt));
+  const qx=ax+dx*tt, qy=ay+dy*tt;
+  return {d:Math.hypot(px-qx,py-qy), tx:dx/Math.sqrt(L2), ty:dy/Math.sqrt(L2), tt};
+}
+function elevInfo(lon,lat){ // 高度(公尺) 與最近山脊走向（山脊高度向南北兩端遞減）
+  let best=1e9, tx=0, ty=1, h=0;
+  for(let k=0;k<RIDGE.length-1;k++){
+    const r=segDist(lon,lat,RIDGE[k][0],RIDGE[k][1],RIDGE[k+1][0],RIDGE[k+1][1]);
+    if(r.d<best){best=r.d; tx=r.tx; ty=r.ty; h=RIDGE[k][2]+(RIDGE[k+1][2]-RIDGE[k][2])*r.tt;}
+  }
+  return {e:h*Math.exp(-(best*best)/(0.30*0.30)), tx, ty};
+}
+const elev=(lon,lat)=>elevInfo(lon,lat).e;
+
+function pointInPoly(px,py,poly){
+  let inside=false;
+  for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+    const xi=poly[i][0],yi=poly[i][1],xj=poly[j][0],yj=poly[j][1];
+    if((yi>py)!==(yj>py) && px<(xj-xi)*(py-yi)/(yj-yi)+xi) inside=true;
+  }
+  return inside;
+}
+
+/* ============ 風場計算 ============ */
+function channelFactor(lon,lat,u,v){ // 台灣海峽狹管效應
+  if(lat<22.5||lat>25.8) return 1;
+  const cn=117.6+(lat-23.4)*0.93;
+  const tw=lat<23.5?120.12:120.12+(lat-23.5)*0.58;
+  if(lon<cn+0.1||lon>tw) return 1;
+  const mid=(cn+tw)/2, half=Math.max(0.3,(tw-cn)/2);
+  const g=Math.exp(-Math.pow((lon-mid)/(half*0.7),2));
+  const spd=Math.hypot(u,v)||1e-9;
+  const ax=Math.sin(25*RAD), ay=Math.cos(25*RAD); // 海峽走向約 NNE–SSW
+  const align=Math.abs((u*ax+v*ay)/spd);
+  return 1+0.45*g*align*align;
+}
+const JETS=[{x:121.80,y:25.46,s:0.30,r:0.45},{x:120.95,y:21.55,s:0.28,r:0.55}]; // 北角/巴士海峽
+
+function windAt(lon,lat,t,opt){
+  const b=baseWind(t);
+  let u=b.u, v=b.v;
+  const bs=Math.hypot(u,v)||1e-9;
+  const northerly=Math.max(0,-b.v/bs);       // 東北季風強度指標 0~1
+  const latF=1+0.06*(lat-23.6)*northerly;    // 冬季北部風較強
+  u*=latF; v*=latF;
+
+  if(opt.terrain){
+    const ch=channelFactor(lon,lat,u,v); u*=ch; v*=ch;
+    for(const j of JETS){
+      const g=Math.exp(-((lon-j.x)*(lon-j.x)+(lat-j.y)*(lat-j.y))/(j.r*j.r));
+      const f=1+j.s*g; u*=f; v*=f;
+    }
+    // 恆春落山風（東北季風翻越低矮尾稜後下衝）
+    const m=Math.min(1,Math.max(0,(-b.v)/7));
+    if(m>0){
+      const g=Math.exp(-((lon-120.68)*(lon-120.68)+(lat-22.03)*(lat-22.03))/(0.30*0.30));
+      u+=-5.0*g*m; v+=-1.8*g*m;
+    }
+    // 山上：減速並沿山脊走向偏轉
+    const ei=elevInfo(lon,lat);
+    if(ei.e>500){
+      const w=Math.min(1,(ei.e-500)/2200);
+      const proj=u*ei.tx+v*ei.ty;
+      u=u*(1-w)+ei.tx*proj*w;
+      v=v*(1-w)+ei.ty*proj*w;
+      const slow=1-0.55*w; u*=slow; v*=slow;
+    }
+    // 背風側弱風區（上風方向有高山者減速）
+    let spd=Math.hypot(u,v);
+    if(spd>0.2){
+      const ux=u/spd, uy=v/spd; let block=0;
+      for(let k=1;k<=9;k++){
+        const d=k*0.13;
+        const e=elev(lon-ux*d, lat-uy*d);
+        if(e>1000) block=Math.max(block, Math.min(1,(e-1000)/1800)*(1-d/1.4));
+      }
+      const f=1-0.70*block; u*=f; v*=f;
+    }
+  }
+  if(opt.ty){
+    const dx=(lon-opt.ty.x)*102, dy=(lat-opt.ty.y)*111; // km
+    const r=Math.hypot(dx,dy)+1e-6, Rm=50;
+    let vt=r<Rm?opt.ty.vmax*(r/Rm):opt.ty.vmax*Math.pow(Rm/r,0.65);
+    vt*=Math.exp(-Math.pow(Math.max(0,r-Rm)/520,2));
+    u+=vt*(-dy/r)+0.28*vt*(-dx/r); // 逆時針 + 向內流入
+    v+=vt*( dx/r)+0.28*vt*(-dy/r);
+  }
+  return {u,v};
+}
+
+/* ============ 網格場 ============ */
+const NX=96, NY=94;
+const cellLon=i=>LON0+(i+0.5)/NX*(LON1-LON0);
+const cellLat=j=>LAT1-(j+0.5)/NY*(LAT1-LAT0);
+const FU=new Float32Array(NX*NY), FV=new Float32Array(NX*NY);
+const landTW=new Uint8Array(NX*NY), landCN=new Uint8Array(NX*NY);
+const coastD=new Float32Array(NX*NY).fill(99), coastNX=new Float32Array(NX*NY), coastNY=new Float32Array(NX*NY);
+
+(function initGrid(){
+  // 海岸取樣點（供海陸風用）
+  const coast=[];
+  for(let k=0;k<TW.length;k++){
+    const a=TW[k], b=TW[(k+1)%TW.length];
+    const n=Math.max(1,Math.round(Math.hypot(b[0]-a[0],b[1]-a[1])/0.05));
+    for(let s=0;s<n;s++) coast.push([a[0]+(b[0]-a[0])*s/n, a[1]+(b[1]-a[1])*s/n]);
+  }
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){
+    const lon=cellLon(i), lat=cellLat(j), id=j*NX+i;
+    const inTW=pointInPoly(lon,lat,TW);
+    landTW[id]=inTW?1:0;
+    landCN[id]=pointInPoly(lon,lat,CN)?1:0;
+    let bd=99, bx=0, by=0;
+    for(const c of coast){
+      const d=Math.hypot(lon-c[0],lat-c[1]);
+      if(d<bd){bd=d; bx=c[0]; by=c[1];}
+    }
+    coastD[id]=bd;
+    if(bd<1.4 && bd>1e-6 && !landCN[id]){
+      // 指向內陸的單位向量
+      const sgn=inTW?1:-1;
+      coastNX[id]=sgn*(lon-bx)/bd; coastNY[id]=sgn*(lat-by)/bd;
+    }
+  }
+})();
+
+const state={
+  t:0.5, playing:true, speed:12/36,   // 每秒約 1/3 月
+  terrain:true, heat:true, breeze:'off',
+  typhoon:false, tyX:122.9, tyY:22.3, tyVmax:43,
+  station:4, // 恆春
+};
+if(matchMedia('(prefers-reduced-motion: reduce)').matches) state.playing=false;
+
+function computeField(){
+  const opt={terrain:state.terrain, ty:state.typhoon?{x:state.tyX,y:state.tyY,vmax:state.tyVmax}:null};
+  for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){
+    const id=j*NX+i;
+    const w=windAt(cellLon(i),cellLat(j),state.t,opt);
+    let u=w.u,v=w.v;
+    if(state.breeze!=='off' && coastD[id]<1.2 && !landCN[id]){
+      const amp=(state.breeze==='day'?2.6:-1.7)*Math.exp(-Math.pow(coastD[id]/0.5,2));
+      u+=coastNX[id]*amp; v+=coastNY[id]*amp;
+    }
+    FU[id]=u; FV[id]=v;
+  }
+}
+function sampleField(px,py){ // 畫布座標 → 雙線性取樣
+  const gx=px/W*NX-0.5, gy=py/H*NY-0.5;
+  const i0=Math.max(0,Math.min(NX-2,Math.floor(gx))), j0=Math.max(0,Math.min(NY-2,Math.floor(gy)));
+  const fx=Math.max(0,Math.min(1,gx-i0)), fy=Math.max(0,Math.min(1,gy-j0));
+  const a=j0*NX+i0, b=a+1, c=a+NX, d=c+1;
+  return {
+    u:(FU[a]*(1-fx)+FU[b]*fx)*(1-fy)+(FU[c]*(1-fx)+FU[d]*fx)*fy,
+    v:(FV[a]*(1-fx)+FV[b]*fx)*(1-fy)+(FV[c]*(1-fx)+FV[d]*fx)*fy };
+}
+
+/* ============ 顏色 ============ */
+const RAMP=[[0,0x33,0x56,0x6e],[3,0x3f,0x89,0xb8],[6,0x53,0xc6,0xd8],[9,0xff,0xd1,0x66],[13,0xff,0x8f,0x5e],[18,0xef,0x53,0x50]];
+function speedColor(s,alpha){
+  let i=0;
+  while(i<RAMP.length-2 && s>RAMP[i+1][0]) i++;
+  const a=RAMP[i], b=RAMP[i+1];
+  const f=Math.max(0,Math.min(1,(s-a[0])/(b[0]-a[0])));
+  const r=Math.round(a[1]+(b[1]-a[1])*f), g=Math.round(a[2]+(b[2]-a[2])*f), bl=Math.round(a[3]+(b[3]-a[3])*f);
+  return `rgba(${r},${g},${bl},${alpha})`;
+}
+
+/* ============ 底圖繪製 ============ */
+const cvBase=document.getElementById('cvBase'), bctx=cvBase.getContext('2d');
+const cvPart=document.getElementById('cvParticles'), pctx=cvPart.getContext('2d');
+
+function poly(ctx,pts){ctx.beginPath();ctx.moveTo(X(pts[0][0]),Y(pts[0][1]));for(let k=1;k<pts.length;k++)ctx.lineTo(X(pts[k][0]),Y(pts[k][1]));ctx.closePath();}
+
+function drawBase(){
+  bctx.clearRect(0,0,W,H);
+  bctx.fillStyle='#0b1826'; bctx.fillRect(0,0,W,H);
+  // 風速底色
+  if(state.heat){
+    const cw=W/NX, chh=H/NY;
+    for(let j=0;j<NY;j++)for(let i=0;i<NX;i++){
+      const id=j*NX+i;
+      const s=Math.hypot(FU[id],FV[id]);
+      bctx.fillStyle=speedColor(s,0.22);
+      bctx.fillRect(i*cw,j*chh,cw+1,chh+1);
+    }
+  }
+  // 陸地
+  bctx.fillStyle='#20323f'; poly(bctx,CN); bctx.fill();
+  bctx.fillStyle='#25404e'; poly(bctx,TW); bctx.fill();
+  bctx.strokeStyle='#4d6b7d'; bctx.lineWidth=1.2; poly(bctx,TW); bctx.stroke();
+  // 澎湖與八重山小島
+  bctx.fillStyle='#25404e';
+  bctx.beginPath(); bctx.ellipse(X(119.58),Y(23.57),7,9,0,0,7); bctx.fill();
+  bctx.beginPath(); bctx.arc(X(123.00),Y(24.45),3,0,7); bctx.fill();
+  bctx.beginPath(); bctx.arc(X(124.17),Y(24.34),3.5,0,7); bctx.fill();
+  // 中央山脈（若地形效應開啟）
+  if(state.terrain){
+    bctx.strokeStyle='rgba(160,190,205,0.5)'; bctx.lineWidth=7; bctx.lineCap='round';
+    bctx.beginPath(); bctx.moveTo(X(RIDGE[0][0]),Y(RIDGE[0][1]));
+    for(let k=1;k<RIDGE.length;k++) bctx.lineTo(X(RIDGE[k][0]),Y(RIDGE[k][1]));
+    bctx.stroke();
+    bctx.save(); bctx.translate(X(120.65),Y(23.35)); bctx.rotate(-72*RAD);
+    bctx.fillStyle='rgba(200,220,232,0.85)'; bctx.font='13px sans-serif'; bctx.textAlign='center';
+    bctx.fillText('中 央 山 脈',0,0); bctx.restore();
+  }
+  // 海域與地名
+  bctx.fillStyle='rgba(150,175,195,0.85)'; bctx.font='14px serif'; bctx.textAlign='center';
+  bctx.save(); bctx.translate(X(119.35),Y(24.35)); bctx.rotate(-65*RAD); bctx.fillText('台 灣 海 峽',0,0); bctx.restore();
+  bctx.fillText('太 平 洋',X(123.3),Y(23.2));
+  bctx.fillText('東 海',X(122.7),Y(26.3));
+  bctx.fillText('巴士海峽',X(121.4),Y(21.15));
+  bctx.fillText('南 海',X(118.2),Y(21.3));
+  bctx.fillStyle='rgba(150,175,195,0.6)';
+  bctx.fillText('中國大陸',X(118.4),Y(25.9));
+  bctx.font='11px sans-serif'; bctx.fillStyle='rgba(190,210,225,0.9)';
+  bctx.fillText('澎湖',X(119.58),Y(23.57)-14);
+  // 觀測站
+  for(let k=0;k<STATIONS.length;k++){
+    const s=STATIONS[k], sel=k===state.station;
+    bctx.beginPath(); bctx.arc(X(s.lon),Y(s.lat),sel?5:3.5,0,7);
+    bctx.fillStyle=sel?'#ffd166':'#cfe3ee'; bctx.fill();
+    if(sel){bctx.strokeStyle='#ffd166'; bctx.lineWidth=1.5; bctx.beginPath(); bctx.arc(X(s.lon),Y(s.lat),9,0,7); bctx.stroke();}
+    bctx.fillStyle='rgba(220,235,245,0.95)'; bctx.font='11px sans-serif';
+    bctx.fillText(s.name.slice(0,2),X(s.lon)+(s.lon>121.3?20:-20),Y(s.lat)+4);
+  }
+  // 指北
+  bctx.fillStyle='rgba(200,220,232,0.9)'; bctx.font='bold 14px serif';
+  bctx.fillText('北',W-30,30);
+  bctx.beginPath(); bctx.moveTo(W-30,40); bctx.lineTo(W-25,54); bctx.lineTo(W-30,50); bctx.lineTo(W-35,54); bctx.closePath(); bctx.fill();
+  // 颱風
+  if(state.typhoon){
+    const tx=X(state.tyX), ty=Y(state.tyY);
+    bctx.save(); bctx.translate(tx,ty);
+    bctx.strokeStyle='rgba(255,255,255,0.85)'; bctx.lineWidth=2.5;
+    for(const s0 of [0,Math.PI]){
+      bctx.beginPath();
+      for(let a=0;a<2.4;a+=0.1){
+        const r=8+a*13;
+        bctx.lineTo(r*Math.cos(a+s0), -r*Math.sin(a+s0));
+      }
+      bctx.stroke();
+    }
+    bctx.beginPath(); bctx.arc(0,0,7,0,7); bctx.fillStyle='#0b1826'; bctx.fill();
+    bctx.strokeStyle='#fff'; bctx.lineWidth=2; bctx.stroke();
+    bctx.restore();
+    bctx.fillStyle='#fff'; bctx.font='11px sans-serif';
+    bctx.fillText('拖我', tx, ty-42);
+  }
+}
+
+/* ============ 粒子 ============ */
+const NPART=2400;
+const parts=new Float32Array(NPART*4); // x,y,age,life
+function resetPart(k){
+  parts[k*4]=Math.random()*W; parts[k*4+1]=Math.random()*H;
+  parts[k*4+2]=0; parts[k*4+3]=50+Math.random()*90;
+}
+for(let k=0;k<NPART;k++){resetPart(k); parts[k*4+2]=Math.random()*parts[k*4+3];}
+
+function stepParticles(){
+  pctx.globalCompositeOperation='destination-in';
+  pctx.fillStyle='rgba(0,0,0,0.93)'; pctx.fillRect(0,0,W,H);
+  pctx.globalCompositeOperation='source-over';
+  pctx.lineWidth=1.4; pctx.lineCap='round';
+  for(let k=0;k<NPART;k++){
+    let x=parts[k*4], y=parts[k*4+1], age=parts[k*4+2], life=parts[k*4+3];
+    const wv=sampleField(x,y);
+    const spd=Math.hypot(wv.u,wv.v);
+    const nx=x+wv.u*0.30, ny=y-wv.v*0.30; // 畫布 y 向下
+    age++;
+    if(age>life||nx<0||nx>W||ny<0||ny>H||spd<0.15){resetPart(k); continue;}
+    pctx.strokeStyle=speedColor(spd,0.8);
+    pctx.beginPath(); pctx.moveTo(x,y); pctx.lineTo(nx,ny); pctx.stroke();
+    parts[k*4]=nx; parts[k*4+1]=ny; parts[k*4+2]=age;
+  }
+}
+
+/* ============ 月份資料 ============ */
+const SEASONS=['冬','冬','春','春','春','夏','夏','夏','秋','秋','秋','冬'];
+const SEASON_CLASS={'春':'spring','夏':'summer','秋':'autumn','冬':'winter'};
+const MONTH_INFO=[
+ {t:'東北季風最強盛',d:'西伯利亞—蒙古高壓強盛，冷空氣一波波南下。東北季風呼嘯穿過台灣海峽，新竹、澎湖風力強勁；迎風的基隆、宜蘭陰雨綿綿，背風的台中、高雄則晴朗乾燥。',f:'觀察台灣海峽中的風，是不是比外海更快？這就是「狹管效應」。'},
+ {t:'寒流與東北季風',d:'冬季風持續，寒流南下時全台氣溫驟降。海峽風浪大，離岸風機在此時發電量最高。東部與南部背風處風相對較弱。',f:'比較台灣東側（花蓮、台東）和海峽側的風速，哪邊被山脈保護了？'},
+ {t:'季風漸弱・春天後母面',d:'東北季風開始減弱，但冷暖空氣交替頻繁，天氣忽冷忽熱多變。風向仍以東北為主，強度已不如隆冬。',f:'把時間慢慢往後拉，觀察風速顏色如何一週週變淡。'},
+ {t:'東北季風尾聲',d:'大陸冷高壓退場，風明顯轉弱，是全年風力較小的過渡期。白天日照增強，沿海開始出現明顯的海風。',f:'打開「海陸風：白天」，看看弱風季節海風有多重要。'},
+ {t:'梅雨報到・風向轉換',d:'太平洋高壓增強，西南風開始建立，暖濕空氣與北方冷空氣在台灣上空交會，形成滯留鋒——梅雨季開始。',f:'找找看：風向大約在哪個時間點從「東北來」翻轉成「西南來」？'},
+ {t:'梅雨鋒面徘徊',d:'西南季風確立，為台灣帶來大量水氣。梅雨鋒面南北徘徊，常有豪雨。西南部平原進入夏雨季節。',f:'西南風從溫暖的南海吹來，想一想它為什麼帶得動這麼多水氣？'},
+ {t:'盛夏・颱風季高峰',d:'西南季風吹拂，天氣炎熱，午後常有雷陣雨。太平洋上颱風活躍，隨時可能影響台灣。',f:'開啟「颱風模式」，把颱風拖到台灣東方海面，觀察逆時針旋轉的環流。'},
+ {t:'颱風與午後雷雨',d:'颱風侵台高峰月。颱風翻越中央山脈時結構常被破壞；西行颱風的西南側環流還會引進強盛西南風，帶來豪雨。',f:'把颱風拖著「穿過」中央山脈，觀察背風側的風場變化。'},
+ {t:'夏季風退場・秋颱注意',d:'西南季風減弱，東北季風開始建立。此時若有颱風北上，外圍環流與東北季風「共伴」，常給北部、東北部帶來致災豪雨。',f:'秋天的風向正在換班——多拉幾次時間軸，感受風向的轉變。'},
+ {t:'東北季風增強・落山風開始',d:'東北季風日益穩定，恆春半島的「落山風」季節開始：季風翻過中央山脈尾端的低矮山稜，向西下衝成強勁陣風。',f:'選擇「恆春」觀測站，看看它附近那條特別亮的強風帶。'},
+ {t:'東北季風穩定強勁',d:'季風穩定，海峽風場全速運轉，是離岸風電的黃金季節。北海岸與東北角迎風多雨，中南部進入乾季。',f:'想一想：為什麼台灣的離岸風機幾乎都蓋在西部海峽，而不是東部外海？'},
+ {t:'隆冬・風的最大月',d:'一年中平均風速最大的時節。強烈大陸冷氣團南下時，海峽出現全年最強的季風，蘭嶼、澎湖、新竹沿海常有超過 10 級的陣風。',f:'關掉再打開「地形效應」，看看沒有中央山脈的台灣會變成什麼樣子。'}];
+
+/* ============ UI：月份顯示 ============ */
+const $=id=>document.getElementById(id);
+function monthIndex(){return Math.min(11,Math.floor(state.t%12));}
+let lastMonthShown=-1;
+function updateMonthUI(){
+  const m=monthIndex();
+  $('timeSlider').value=state.t;
+  if(m===lastMonthShown) return;
+  lastMonthShown=m;
+  $('monthNum').textContent=(m+1)+'月';
+  const se=SEASONS[m];
+  const chip=$('seasonChip'); chip.textContent=se; chip.className='chip '+SEASON_CLASS[se];
+  $('mcTitle').textContent=(m+1)+'月・'+MONTH_INFO[m].t;
+  $('mcDesc').textContent=MONTH_INFO[m].d;
+  $('mcFocus').innerHTML='<b>本月觀察重點</b>　'+MONTH_INFO[m].f;
+}
+
+/* ============ 觀測站讀數與風花圖 ============ */
+const DIRS=['北','東北','東','東南','南','西南','西','西北'];
+function beaufort(s){
+  const th=[0.3,1.6,3.4,5.5,8.0,10.8,13.9,17.2,20.8,24.5,28.5,32.7];
+  let b=0; while(b<th.length&&s>=th[b])b++; return b;
+}
+function updateStationReadout(){
+  const st=STATIONS[state.station];
+  const w=sampleField(X(st.lon),Y(st.lat));
+  const spd=Math.hypot(w.u,w.v);
+  const dirFrom=(Math.atan2(-w.u,-w.v)/RAD+360)%360;
+  const sector=DIRS[Math.round(dirFrom/45)%8];
+  $('spdVal').textContent=spd.toFixed(1);
+  $('dirText').textContent=sector+'風・蒲福 '+beaufort(spd)+' 級';
+  // 箭頭指向風吹去的方向（畫布上）：↓ 為基準（吹向南）
+  $('dirArrow').style.transform='rotate('+(dirFrom+0)+'deg)';
+}
+const SEASON_OF_MONTH=[3,3,0,0,0,1,1,1,2,2,2,3]; // 0春1夏2秋3冬
+const SEASON_COLORS=['#3f9d5a','#e0634d','#c98a20','#4c7fb8'];
+function drawRose(){
+  const cv=$('cvRose'), ctx=cv.getContext('2d');
+  const cx=120, cy=120, R=92;
+  ctx.clearRect(0,0,240,240);
+  const css=getComputedStyle(document.documentElement);
+  const inkMuted=css.getPropertyValue('--muted')||'#888';
+  const st=STATIONS[state.station];
+  const bins=Array.from({length:8},()=>[0,0,0,0]);
+  const opt={terrain:state.terrain, ty:null};
+  for(let m=0;m<12;m++){
+    const w=windAt(st.lon,st.lat,m+0.5,opt);
+    const spd=Math.hypot(w.u,w.v);
+    const dirFrom=(Math.atan2(-w.u,-w.v)/RAD+360)%360;
+    bins[Math.round(dirFrom/45)%8][SEASON_OF_MONTH[m]]+=spd;
+  }
+  const maxTot=Math.max(...bins.map(b=>b[0]+b[1]+b[2]+b[3]),1e-6);
+  // 網格圈
+  ctx.strokeStyle='rgba(128,144,158,0.35)'; ctx.lineWidth=1;
+  for(const rr of [R/3,2*R/3,R]){ctx.beginPath();ctx.arc(cx,cy,rr,0,7);ctx.stroke();}
+  // 花瓣（依季節堆疊）
+  for(let d=0;d<8;d++){
+    const ang=(d*45-90)*RAD; // 0=北 在上
+    let r0=0;
+    const tot=bins[d][0]+bins[d][1]+bins[d][2]+bins[d][3];
+    if(tot<1e-6) continue;
+    for(let s0=0;s0<4;s0++){
+      const seg=bins[d][s0]/maxTot*R;
+      if(seg<0.5){r0+=seg;continue;}
+      ctx.beginPath();
+      ctx.arc(cx,cy,r0+seg,ang-16*RAD,ang+16*RAD);
+      ctx.arc(cx,cy,Math.max(r0,2),ang+16*RAD,ang-16*RAD,true);
+      ctx.closePath();
+      ctx.fillStyle=SEASON_COLORS[s0]; ctx.globalAlpha=0.85; ctx.fill(); ctx.globalAlpha=1;
+      r0+=seg;
+    }
+  }
+  ctx.fillStyle=inkMuted; ctx.font='12px sans-serif'; ctx.textAlign='center';
+  const lbl=['北','東北','東','東南','南','西南','西','西北'];
+  for(let d=0;d<8;d++){
+    const ang=(d*45-90)*RAD;
+    ctx.fillText(lbl[d],cx+Math.cos(ang)*(R+14),cy+Math.sin(ang)*(R+14)+4);
+  }
+  // 說明文字
+  let best=0,bi=0;
+  bins.forEach((b,i)=>{const t2=b[0]+b[1]+b[2]+b[3];if(t2>best){best=t2;bi=i;}});
+  $('roseCaption').textContent='「'+st.name.replace(/（.*）/,'')+'」全年以'+DIRS[bi]+'風為主。';
+}
+
+/* ============ 分頁 ============ */
+document.querySelectorAll('.tabbtn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tabbtn').forEach(b=>b.setAttribute('aria-selected','false'));
+    btn.setAttribute('aria-selected','true');
+    document.querySelectorAll('.tabpanel').forEach(p=>p.classList.remove('active'));
+    $('tab-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* 每月圖鑑 */
+(function buildMonthGrid(){
+  const g=$('monthGrid');
+  MONTH_INFO.forEach((mi,m)=>{
+    const el=document.createElement('div');
+    el.className='mcard '+SEASON_CLASS[SEASONS[m]];
+    el.innerHTML='<h3>'+(m+1)+'月・'+mi.t+'</h3><p>'+mi.d+'</p><span class="go">▶ 跳到這個月</span>';
+    el.addEventListener('click',()=>{state.t=m+0.5; needField=true; lastMonthShown=-1; updateMonthUI(); window.scrollTo({top:0,behavior:'smooth'});});
+    g.appendChild(el);
+  });
+})();
+
+/* 知識庫 */
+const KNOWLEDGE=[
+['風是怎麼來的？','太陽加熱地表不均勻，有的地方空氣受熱上升（形成低氣壓），有的地方空氣冷卻下沉（形成高氣壓）。空氣永遠從<b>高壓流向低壓</b>，這股流動就是風。氣壓差越大，風越強——就像水位差越大，水流越急。','天氣圖上等壓線越密集的地方，風越大。找一張今天的地面天氣圖驗證看看！'],
+['季風：大陸與海洋的呼吸','陸地比熱小（升溫快、降溫也快），海洋比熱大（升降溫都慢）。<b>冬天</b>亞洲大陸急速變冷，堆出強大的西伯利亞—蒙古高壓，冷空氣向南流出，到台灣就是<b>東北季風</b>；<b>夏天</b>大陸被曬得發燙形成低壓，換海洋上的暖濕空氣往大陸流，到台灣就是<b>西南季風</b>。一年反轉一次，像大陸與海洋在交替呼吸。','為什麼白天的海風、夜晚的陸風，原理跟季風一樣，只是規模和週期不同？'],
+['東北季風（10月～翌年3月）','台灣冬半年的主角。特徵：一、風強——尤其新竹以南的海峽沿岸與澎湖；二、迎風面的基隆、宜蘭、東北角陰雨綿綿（冬雨），背風面的中南部乾燥晴朗；三、冷空氣一波波南下，帶來寒流。',
+'基隆被稱為「雨都」、新竹被稱為「風城」，都跟東北季風有關。從模型裡找出原因。'],
+['西南季風（5月～9月）','夏半年從南海與印度洋方向吹來的暖濕氣流，是台灣夏季雨水的主要來源：先帶來梅雨，之後供應午後雷陣雨與颱風豪雨的水氣。風速通常比東北季風溫和，但含水量驚人。','夏天的雨多半下在中南部與山區的午後，冬天的雨卻集中在北部與東北部——用「迎風面」解釋這件事。'],
+['梅雨（5～6月）','春末夏初，北方冷空氣還沒退場、南方暖濕空氣已經北上，兩者勢均力敵，交界處形成一條<b>滯留鋒</b>，在台灣附近南北徘徊，帶來連日陰雨。梅雨是台灣重要的水資源，梅雨太少的年份常鬧乾旱。','梅雨鋒面為什麼「滯留」？想一想兩邊氣團拉鋸的畫面。'],
+['颱風（7～9月最多）','熱帶海洋上的巨大低壓渦旋，在北半球<b>逆時針</b>旋轉。中心的颱風眼風平浪靜，眼牆附近風雨最強。颱風靠溫暖海水供應能量，登陸或遇到中央山脈後結構被破壞而減弱。侵台颱風平均每年 3～4 個。','用颱風模式把颱風放在台灣東方，看看北部吹什麼風？再放到巴士海峽，風向又變成怎樣？'],
+['中央山脈：天氣的分界牆','平均高度近 3000 公尺的中央山脈，把台灣切成迎風與背風兩個世界：迎風面空氣被迫抬升、降雨豐沛；背風面氣流下沉、乾燥少雨（雨影效應），風也明顯減弱。颱風西側過山下沉增溫時，台東常出現又熱又乾的<b>焚風</b>。','關閉模型的「地形效應」，台灣東西兩側的風速差異就消失了——山脈的影響有多大？'],
+['狹管效應與落山風','空氣跟水一樣，流過變窄的通道會加速。台灣海峽夾在中央山脈與福建武夷山之間，正是一條巨大的風管——所以新竹、澎湖的冬季風特別強，這叫<b>狹管效應</b>。而在恆春半島，東北季風翻過中央山脈尾端較低的山稜後向西下衝，形成乾燥強勁的<b>落山風</b>，最強可達颱風等級的陣風。','吹風機的口越捏越扁，風越強——跟海峽的道理相同。'],
+['海陸風：一天的小季風','白天陸地升溫快，空氣上升，海上較涼的空氣吹向陸地＝<b>海風</b>；夜晚陸地降溫快，換陸地空氣吹向海洋＝<b>陸風</b>。夏季季風微弱時，海陸風就成為沿海地區白天降溫、傍晚變天的主角。','打開模型的「海陸風」開關，切換白天／夜晚，觀察沿海風向的翻轉。'],
+['科氏力：讓風轉彎的隱形效應','地球自轉使北半球移動中的空氣<b>向右偏轉</b>。這解釋了兩件事：一、風不會直直從高壓吹到低壓，而是斜斜地吹；二、空氣流入低壓中心時不斷右偏，繞出<b>逆時針</b>的旋轉——這就是颱風轉向的祕密（南半球則相反，是順時針）。','冬季風從西伯利亞（北方）出發，抵達台灣時為什麼變成「東北」風？右偏是關鍵。'],
+['風與生活：風電、空品、生態','台灣海峽是<b>世界級的優良風場</b>——彰化外海的離岸風機群冬天火力全開，東北季風越強發電越多，剛好補上冬季的用電。此外，東北季風也會把境外的污染物往南帶（冬季空品差的原因之一）；候鳥乘著季風遷徙過境；烏魚順著冬季海流與季風南下，成就了「烏金」漁汛。','查查看：全世界風況最好的前 20 個離岸風場，有幾個在台灣海峽？（提示：超過一半）'],
+];
+(function buildKnowledge(){
+  const box=$('tab-knowledge');
+  KNOWLEDGE.forEach((k,i)=>{
+    const d=document.createElement('details');
+    d.className='kcard';
+    d.innerHTML='<summary><span class="no">'+String(i+1).padStart(2,'0')+'</span>'+k[0]+'</summary>'
+      +'<div class="body"><p>'+k[1]+'</p><div class="think"><b>想一想</b>　'+k[2]+'</div></div>';
+    if(i===0)d.open=true;
+    box.appendChild(d);
+  });
+})();
+
+/* 小測驗 */
+const QUIZ=[
+['台灣冬季（例如1月）的盛行風是？',['西南風','東北風','東南風','西北風'],1,'冬季亞洲大陸的冷高壓向外流出冷空氣，經科氏力右偏後，抵達台灣成為東北季風。'],
+['季風之所以會隨季節反轉方向，最主要的原因是？',['地球公轉軌道改變','海洋與陸地的比熱差異','月球引力','臭氧層厚度變化'],1,'陸地升降溫快、海洋慢，冬夏的海陸溫差方向相反，氣壓分布跟著反轉，風向因此對調。'],
+['新竹有「風城」之稱、澎湖冬天風特別強，主要是因為？',['狹管效應：風被地形夾窄而加速','當地樹木較少','海水溫度特別低','緯度特別高'],0,'台灣海峽像一條夾在兩岸山地之間的巨大風管，氣流通過變窄的通道會加速。'],
+['恆春半島秋冬著名的強風叫做？',['焚風','龍捲風','落山風','九降風'],2,'東北季風翻越中央山脈尾端低矮山稜後向西下衝，形成乾燥強勁的落山風。（新竹的「九降風」則是東北季風的別稱。）'],
+['北半球的颱風，環流旋轉的方向是？',['順時針','逆時針','不旋轉','隨機'],1,'空氣流入低壓中心時被科氏力向右偏轉，在北半球繞出逆時針旋轉。'],
+['台灣的梅雨季大約在哪兩個月？',['1～2月','3～4月','5～6月','9～10月'],2,'春末夏初冷暖氣團勢均力敵，滯留鋒在台灣附近徘徊，帶來連日降雨。'],
+['夏季午後雷陣雨與豪雨的水氣，主要由什麼供應？',['東北季風','西南季風','極地冷氣團','高空噴射氣流'],1,'西南季風從溫暖的南海與印度洋帶來大量暖濕空氣，是夏季降雨的水氣來源。'],
+['冬天基隆、宜蘭特別多雨，是因為它們位於？',['東北季風的迎風面','東北季風的背風面','赤道無風帶','梅雨鋒面南側'],0,'潮濕的東北季風從海上吹來，在迎風面被地形抬升凝結，造成綿綿冬雨。'],
+['台灣海峽的離岸風力發電，發電量最大的季節是？',['春季','夏季','秋季','冬季'],3,'冬季東北季風最強，加上狹管效應，海峽風場此時滿載運轉。'],
+['白天的海風，吹的方向是？',['從陸地吹向海洋','從海洋吹向陸地','沿著海岸線平行吹','由高空吹向地面'],1,'白天陸地升溫快、氣壓較低，較涼的海上空氣流向陸地，形成海風。'],
+];
+(function buildQuiz(){
+  const list=$('quizList');
+  let answered=0, correct=0;
+  QUIZ.forEach((q,qi)=>{
+    const item=document.createElement('div');
+    item.className='quiz-item';
+    let html='<div class="qt">'+(qi+1)+'. '+q[0]+'</div>';
+    q[1].forEach((opt,oi)=>{
+      html+='<label><input type="radio" name="q'+qi+'" value="'+oi+'"> '+opt+'</label>';
+    });
+    html+='<div class="expl">'+q[3]+'</div>';
+    item.innerHTML=html;
+    item.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('change',()=>{
+        if(item.classList.contains('answered'))return;
+        item.classList.add('answered');
+        answered++;
+        const labels=item.querySelectorAll('label');
+        labels[q[2]].classList.add('correct');
+        if(+inp.value===q[2]){correct++;}
+        else labels[+inp.value].classList.add('wrong');
+        item.querySelectorAll('input').forEach(x=>x.disabled=true);
+        $('quizScore').textContent='作答進度：'+answered+' / '+QUIZ.length+'　答對 '+correct+' 題'+(answered===QUIZ.length?(correct>=8?'　🎉 風的達人！':'　再到知識庫複習一下吧'):'');
+      });
+    });
+    list.appendChild(item);
+  });
+})();
+
+/* ============ 事件 ============ */
+let needField=true, needRose=true;
+$('timeSlider').addEventListener('input',e=>{state.t=+e.target.value%12; needField=true; updateMonthUI();});
+$('playBtn').addEventListener('click',()=>{
+  state.playing=!state.playing;
+  $('playBtn').textContent=state.playing?'⏸ 暫停':'▶ 播放';
+});
+document.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>{
+  state.t=+b.dataset.jump; needField=true; lastMonthShown=-1; updateMonthUI();
+}));
+$('tglTerrain').addEventListener('change',e=>{state.terrain=e.target.checked; needField=true; needRose=true;});
+$('tglHeat').addEventListener('change',e=>{state.heat=e.target.checked; needField=true;});
+$('selBreeze').addEventListener('change',e=>{state.breeze=e.target.value; needField=true;});
+$('tglTyphoon').addEventListener('change',e=>{
+  state.typhoon=e.target.checked; needField=true;
+  $('tyStrengthRow').style.display=state.typhoon?'flex':'none';
+});
+$('selTyStrength').addEventListener('change',e=>{state.tyVmax=+e.target.value; needField=true;});
+(function buildStations(){
+  const sel=$('stationSel');
+  STATIONS.forEach((s,i)=>{
+    const o=document.createElement('option'); o.value=i; o.textContent=s.name; sel.appendChild(o);
+  });
+  sel.value=state.station;
+  sel.addEventListener('change',e=>{state.station=+e.target.value; needField=true; needRose=true;});
+})();
+
+/* 颱風拖曳 */
+let dragging=false;
+function evtPos(e){
+  const r=cvPart.getBoundingClientRect();
+  return {x:(e.clientX-r.left)/r.width*W, y:(e.clientY-r.top)/r.height*H};
+}
+cvPart.addEventListener('pointerdown',e=>{
+  if(!state.typhoon)return;
+  const p=evtPos(e);
+  if(Math.hypot(p.x-X(state.tyX),p.y-Y(state.tyY))<45){dragging=true; cvPart.setPointerCapture(e.pointerId);}
+});
+cvPart.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  const p=evtPos(e);
+  state.tyX=LON0+p.x/W*(LON1-LON0);
+  state.tyY=LAT1-p.y/H*(LAT1-LAT0);
+  needField=true;
+});
+cvPart.addEventListener('pointerup',()=>{dragging=false;});
+
+/* ============ 主迴圈 ============ */
+let lastFieldT=-99;
+function frame(){
+  if(state.playing){
+    state.t=(state.t+state.speed/60)%12;
+    updateMonthUI();
+    if(Math.abs(state.t-lastFieldT)>0.06 || state.t<lastFieldT) needField=true;
+  }
+  if(needField){
+    computeField();
+    drawBase();
+    updateStationReadout();
+    lastFieldT=state.t;
+    needField=false;
+  }
+  if(needRose){drawRose(); needRose=false;}
+  stepParticles();
+  requestAnimationFrame(frame);
+}
+updateMonthUI();
+computeField(); drawBase(); drawRose(); updateStationReadout();
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>

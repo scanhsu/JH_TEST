@@ -18,3 +18,14 @@ View your app in AI Studio: https://ai.studio/apps/drive/1a3T_OGvTeBwuOSjDsgkmqb
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## 附加教學模組：台灣風的四季
+
+本專案另附一份**獨立、零相依**的國中地球科學教學模型，與主 App 並存、互不影響：
+
+- 互動模擬器：[`public/taiwan-wind/index.html`](public/taiwan-wind/index.html)
+  （直接用瀏覽器開啟即可；`npm run dev` 執行時可透過 `/taiwan-wind/` 存取）
+- 教師手冊：[`docs/taiwan-wind/教師手冊.md`](docs/taiwan-wind/教師手冊.md)
+- 學習單：[`docs/taiwan-wind/學習單.md`](docs/taiwan-wind/學習單.md)
+
+模擬台灣周圍春夏秋冬的風場，涵蓋季風、地形效應、颱風與海陸風，內含每月圖鑑、知識庫與測驗。
