@@ -1,3 +1,4 @@
+# 部署台灣風場教學模型至 GitHub Pages（Pages 首次啟用後重跑）
 name: Deploy Taiwan Wind Model to Pages
 
 on:
