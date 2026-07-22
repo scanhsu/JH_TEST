@@ -43,6 +43,12 @@
 
 - Marketing material：Photo / Quick Guide / Data Sheet / Manual / Product Launch Note。
 - 要領：Data sheet 規格數字與 Engineering Spec、測試報告一致，出貨前最後一次核對。
+- **Datasheet 撰寫一律依 [06 Datasheet 編輯規則](../06-doc-standards/datasheet-rules.md)**；寫 eNews 參考 Datasheet 不參考 PSD；不可寫 BOM 沒建的功能。
+
+### 外觀標示控管（銘版 / 網印）
+
+- 標準品外觀的 I/O 網印標示、NEXBOOT logo 擺放由 **PLM 與 ME 共同控管**，依 [06 銘版與網印設計原則](../06-doc-standards/silkprint-membrane-rules.md)。
+- 錯了要重開模/重印，成本高 —— 設計審查階段就對照規範的正確/錯誤範例檢查。
 
 ---
 

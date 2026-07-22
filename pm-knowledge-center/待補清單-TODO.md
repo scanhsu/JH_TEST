@@ -78,6 +78,15 @@
 
 ---
 
+### J. 文件規範同步（06）
+📄 檔案：`06-doc-standards/*.md`
+
+- [ ] 規範改版時（Datasheet / 銘版網印 / Block Diagram Icons），同步更新對應頁面的版本標註與內容摘要，並替換 `attachments/` 原始檔
+- [ ] 補上原始檔中的內部路徑（Specification Table、Logos 資料夾）是否為現行有效路徑
+- [ ] 確認核准窗口（品牌中心審核、Product Positioning 分類 owner）現況
+
+---
+
 ## 🟢 優先級 3：需要「持續更新」的動態內容（不是一次補完，是例行維護）
 
 ### I. CPU / SoC Roadmap 資料庫

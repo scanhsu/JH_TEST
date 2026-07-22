@@ -13,6 +13,7 @@
 | [03 產品架構規畫參考方案](./03-architecture-reference/README.md) | 過去範例產品庫：架構規畫、選型理由、經驗教訓 | 規畫新產品時 |
 | [04 工作範圍及要領 Wiki](./04-wiki-work-scope/README.md) | PLM 工作範圍、合作對象職掌（PJM / PMC / RD）、入職指南、工作要領 | 新手必讀 |
 | [05 流程及工作說明](./05-processes/README.md) | 研發 C 流程（C0~C5）PLM 視角、成本評估格式、BOM / ECO 協作常識 | 全體 PLM |
+| [06 文件規範與設計準則](./06-doc-standards/README.md) | Datasheet 編輯規則、銘版/網印設計原則、Block Diagram 圖示規範 | 撰寫 datasheet／定義外觀時 |
 
 ## 新手 PLM 入職建議路徑
 

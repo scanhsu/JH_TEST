@@ -130,7 +130,7 @@ Chipset Roadmap        →     （SOW / PSD）          →     C1 設計規劃 
 | QVL List Final 版 | PM |
 | PVT Test Report | IRT |
 | MTBF Report | 10F DQA |
-| Marketing Material（Photo / Quick Guide / Data Sheet / Manual / Product Launch Note） | PM |
+| Marketing Material（Photo / Quick Guide / Data Sheet / Manual / Product Launch Note）— 依 [06 文件規範](../06-doc-standards/README.md) | PM |
 | 環境考量面驗證表 | PM |
 | 承認書 | 全部到齊 |
 
