@@ -20,6 +20,30 @@
 | **生命週期** | EOL 決策、ACR approval impact 評估、長供貨風險管理 |
 | **文件責任** | Kick-off 文件內容（SOW / PSD / 環境考量面評估表，由 PMC 發行）、環境考量面驗證表（C4） |
 
+### PLM 具體職責（R&R）
+
+以下是 PLM 三大核心職責的展開，這是 PLM 有別於 PJM 的價值所在 —— **對外扛規格與商業承諾、對內扛成本與產品線策略**：
+
+#### 1. RFQ / Bid 接單與規格基線確立
+
+- 解讀客戶的 **RFQ / RFI** 需求，產出 **Compliance Table**（逐項標示符合 / 不符合 / 需妥協）。
+- 與研發架構師（**System Architect**）確認哪些做得到、哪些需妥協。
+- 確定產品**基準線（Baseline）** —— 後續規格變更都以此為比較基準（對應 PCR 發動）。
+- 產出銜接：Compliance Table 與 Baseline 是 SOW / PSD 的輸入。
+
+#### 2. BOM Cost 與利潤管理
+
+- 主導產品 **Cost Model**，審核**原物料成本、模具費、NRE（一次性工程費用）**。
+- 確保量產出貨時的**毛利符合事業群（BG / BU）預期**。
+- 方法遵循 [成本評估格式](../05-processes/cost-evaluation.md)：ODM 案用 Function BOM、標準品客製用加減件；報價前與業務確認評估數量基礎。
+
+#### 3. 標準平台延伸與衍生機種（Derivatives）
+
+- 在**公版架構（Standard Architecture）**上規劃客製化 **SKUs**。
+- 提高**設計重複利用率**，降低研發重工成本 —— 這是 PLM 控制 BU 整體研發效率的槓桿。
+- 衍生機種（Derivation）走較短開發時程（13 週到 C3，vs New Design 18 週，見 [研發 C 流程](../05-processes/rd-c-process.md)）。
+- 產出銜接：衍生 SKU 的規劃可回饋到 [02 CPU/SoC 資料庫](../02-cpu-soc-roadmap/README.md) 與 [03 參考產品庫](../03-architecture-reference/README.md)。
+
 ### PLM 在 C 流程各階段的責任節點
 
 | 階段 | PLM 要做的事 |
@@ -41,7 +65,26 @@
 - C3/C4 **Open Issue Judgement**：彙整 Redmine open issue 的說明與對策發給各主管
 - Close Meeting 主導：成功關鍵因素、如期/如質/如預算檢討、專案評分
 
-**PLM ↔ PJM 協作介面**：PLM 給「做什麼」（SOW/PSD、規格優先序、目標成本），PJM 給「做到哪了」（schedule、風險、open issue）。規格變更由 PLM 判斷商業影響後走 PCR，PJM 執行變更管理。
+#### PJM 具體職責（R&R）
+
+PLM 要看得懂 PJM 在扛什麼，協作才對得上。PJM 五大職責：
+
+1. **主時程規劃與里程碑監控**：制定 **EVT / DVT / PVT → MP** 的 Master Schedule，嚴格監控**關鍵路徑（Critical Path）**，確保客戶排定的發表會或量產日不開天窗。
+2. **NPI 物料齊套管制（CTB, Clear To Build）**：打件試產前，協同**物控（MC）與採購**追蹤所有長交期料件（**L/T**）、樣品件，確保試產打件前料件 **100% 齊套**。
+3. **內部跨工程整合與戰情會議**：召集 **HW、Layout、ME、BIOS/FW、Thermal、RF、QA** 等工程單位，主導 **Open Issue List** 追蹤，排除產線停滯瓶頸。
+4. **工廠試產與製程爬坡（Ramp-up）**：進駐組裝廠/SMT 廠掌控試產**直通率（FPY）**、夾治具就位率（**Fixtures**）、測試程式（**ATE**）部署，協調**生管（PC）**排程。
+5. **ECR / ECO 變更推進**：主導變更控制委員會（**CCB**），評估工程缺陷或料源問題導致的設計修改，控管試產在製品（**WIP**）與舊料報廢風險。
+
+**PLM ↔ PJM 協作介面**：
+
+| PLM 給 PJM | PJM 給 PLM |
+|-----------|-----------|
+| SOW / PSD、規格優先序、Baseline | Master Schedule、Critical Path 風險 |
+| 目標成本 / Cost Model | 齊套（CTB）狀態、L/T 料風險 |
+| 規格變更的商業判斷（發動 PCR） | Open Issue List、試產 FPY / 良率 |
+| 客戶發表會 / 量產日期需求 | ECR/ECO 對成本與時程的衝擊評估 |
+
+規格變更由 **PLM 判斷商業影響**（成本 / 時程 / 其他客戶）後發動，**PJM 於 CCB 執行變更管理**（ECR/ECO、WIP 與舊料報廢控管）。
 
 ### RD（研發：HW / SE 等）— 技術實現夥伴
 
@@ -69,5 +112,31 @@
 | PE | Pilot Run 與量產測試 | C4 量試、量產性回饋 |
 | IRT | IRT / PVT（Burn-in）Test | C4 |
 | 業務 | 客戶需求、報價、數量預估 | 成本評估的數量基礎、價格分析 |
+
+## 名詞速查（新手 PLM 常見縮寫）
+
+| 縮寫 | 全名 / 意義 | 誰主要在用 |
+|------|-------------|-----------|
+| RFQ / RFI | Request for Quotation / Information，客戶詢價/需求徵詢 | PLM |
+| Compliance Table | 逐項標示需求符合/不符合/需妥協的對照表 | PLM |
+| Baseline | 產品基準線，規格變更的比較基準 | PLM |
+| System Architect | 研發架構師，PLM 確認技術可行性的對口 | PLM ↔ RD |
+| Cost Model | 產品成本模型（原物料 + 模具 + NRE） | PLM |
+| NRE | Non-Recurring Engineering，一次性工程費用 | PLM |
+| BG / BU | Business Group / Business Unit，事業群/事業部 | PLM |
+| Derivatives | 衍生機種（公版架構延伸的客製 SKU） | PLM |
+| SKU | Stock Keeping Unit，可獨立銷售的料號/機種 | PLM |
+| Master Schedule | 主時程（EVT/DVT/PVT→MP） | PJM |
+| Critical Path | 關鍵路徑（決定專案總工期的作業鏈） | PJM |
+| CTB | Clear To Build，打件試產前料件齊套放行 | PJM |
+| L/T | Lead Time，料件交期（長交期料需提早追） | PJM |
+| MC / PC | 物控 / 生管 | PJM 協作 |
+| FPY | First Pass Yield，試產直通率 | PJM |
+| Fixtures | 夾治具 | PJM |
+| ATE | Automated Test Equipment / 測試程式 | PJM |
+| Ramp-up | 量產製程爬坡 | PJM |
+| ECR / ECO | Engineering Change Request / Order，工程變更請求/命令 | PJM |
+| CCB | Change Control Board，變更控制委員會 | PJM 主導 |
+| WIP | Work In Process，在製品 | PJM |
 
 > 詳細各階段活動與文件見 [研發 C 流程](../05-processes/rd-c-process.md)。完整 job description table 請向部門主管索取後補充連結於此。
