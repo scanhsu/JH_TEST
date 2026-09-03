@@ -4,16 +4,19 @@
 >
 > 本頁以 **PLM 為主體**：先講清楚我們自己的工作範圍，再說明各合作對象（PJM / PMC / MPM / RD）負責什麼、我們跟他們的協作介面在哪裡。
 
-## 我們是誰：PLM（Product Line Manager）
+## 我們是誰：PLM（Product Line Manager）＝ 產品架構師
 
-**一句話定位**：對產品線的**商業成敗**負責 —— 定義對的產品、賣到對的價錢、管好整個生命週期。
+**一句話定位**：對產品線的**商業成敗**負責，同時是**產品架構師（Product Architect）** —— 不只決定「做什麼、賣多少、管到 EOL」，更**親手設計產品的系統架構**。
+
+> **PLM 就是產品架構師**。這是 PLM 與純商業/行銷型 PM 的根本差異：規格不是丟給 RD 去想，**產品架構由 PLM 主導設計** —— 平台選型、系統組成、介面配置、公版與衍生的架構規劃，都是 PLM 自己的產出。RD（HW/SE）負責把 PLM 定義的架構做底層實作與驗證。這也是為什麼 [02 CPU/SoC 資料庫](../02-cpu-soc-roadmap/README.md) 與 [03 架構參考產品庫](../03-architecture-reference/README.md) 是 PLM 的核心資產。
 
 ### PLM 核心工作範圍
 
 | 領域 | 工作內容 |
 |------|----------|
 | **產品規畫** | 蒐集商業輸入（客戶需求、chipset roadmap、技術創新、上級主管策略），決定做什麼產品 |
-| **產品定義** | 將商業需求轉為內部規格：主導 **SOW / PSD**（0.x 版 → Kick-off 後 1.x 版） |
+| **產品架構設計** | 身為產品架構師：主導系統架構、平台選型、介面/功能配置、Block Diagram；公版架構與衍生機種的架構規劃（見 [03 架構參考產品庫](../03-architecture-reference/README.md)、[06 Block Diagram 規範](../06-doc-standards/block-diagram-icons.md)） |
+| **產品定義** | 將商業需求與架構轉為內部規格：主導 **SOW / PSD**（0.x 版 → Kick-off 後 1.x 版） |
 | **Roadmap 管理** | 維護產品線 roadmap，追蹤各家 CPU/SoC 方案（見 [02 資料庫](../02-cpu-soc-roadmap/README.md)） |
 | **價格與成本** | 可行性分析階段的價格分析；成本評估（Function BOM / 加減件，見[成本評估格式](../05-processes/cost-evaluation.md)）；提供成本評估前需與業務確認**評估數量基礎** |
 | **產品上市** | C4 階段 marketing material：Photo / Quick Guide / Data Sheet / Manual / Product Launch Note |
@@ -27,7 +30,7 @@
 #### 1. RFQ / Bid 接單與規格基線確立
 
 - 解讀客戶的 **RFQ / RFI** 需求，產出 **Compliance Table**（逐項標示符合 / 不符合 / 需妥協）。
-- 與研發架構師（**System Architect**）確認哪些做得到、哪些需妥協。
+- **PLM 身為產品架構師（System Architect）**，主導判斷哪些做得到、哪些需妥協，並提出對應的架構方案；底層實作可行性與風險則與 RD 技術窗口（HW / SE）確認。
 - 確定產品**基準線（Baseline）** —— 後續規格變更都以此為比較基準（對應 PCR 發動）。
 - 產出銜接：Compliance Table 與 Baseline 是 SOW / PSD 的輸入。
 
@@ -91,7 +94,7 @@ PLM 要看得懂 PJM 在扛什麼，協作才對得上。PJM 五大職責：
 - **HW**：電路圖 / Layout、新電子料料號申請 / Pre-BOM、研發管制表、Engineering Spec、Function Debug、Close Meeting 的 Lesson & Learn（技術/流程）
 - **SE**：成品 Pre-BOM、System Reliability Test Plan/Report、Thermal Report、System C3 Test
 
-**PLM ↔ RD 協作介面**：可行性分析階段（技術可行性、thermal simulation）就要拉 RD 進來對規格；PLM 提供市場端規格需求與取捨依據，RD 回饋技術限制與成本影響。不要在沒問過 RD 的情況下對客戶承諾規格。
+**PLM ↔ RD 協作介面**：**PLM 設計產品架構，RD 負責底層實作與驗證**。PLM 提出系統架構、平台選型與規格取捨；RD（HW/SE）回饋電路/layout/thermal 等實作可行性、技術限制與成本影響。可行性分析階段（技術可行性、thermal simulation）就要拉 RD 一起確認架構落地性 —— 架構決策權在 PLM，但不要在沒和 RD 確認實作可行性前就對客戶承諾。
 
 ### PMC（Project Monitoring & Control）
 
@@ -120,7 +123,7 @@ PLM 要看得懂 PJM 在扛什麼，協作才對得上。PJM 五大職責：
 | RFQ / RFI | Request for Quotation / Information，客戶詢價/需求徵詢 | PLM |
 | Compliance Table | 逐項標示需求符合/不符合/需妥協的對照表 | PLM |
 | Baseline | 產品基準線，規格變更的比較基準 | PLM |
-| System Architect | 研發架構師，PLM 確認技術可行性的對口 | PLM ↔ RD |
+| System Architect / 產品架構師 | 產品系統架構的設計者 —— **即 PLM 本身的角色** | PLM |
 | Cost Model | 產品成本模型（原物料 + 模具 + NRE） | PLM |
 | NRE | Non-Recurring Engineering，一次性工程費用 | PLM |
 | BG / BU | Business Group / Business Unit，事業群/事業部 | PLM |
